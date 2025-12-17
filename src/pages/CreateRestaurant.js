@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 
 const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+const LAT_REGEX = /^-?(90(\.0+)?|[0-8]?\d(\.\d+)?)$/;
+const LONG_REGEX = /^-?(180(\.0+)?|1[0-7]\d(\.\d+)?|[0-9]?\d(\.\d+)?)$/;
 
 const CreateRestaurant = () => {
   const navigate = useNavigate();
@@ -84,6 +86,18 @@ const CreateRestaurant = () => {
 
     if (!EMAIL_REGEX.test(trimmedEmail)) {
       setError('Please enter a valid email address');
+      return false;
+    }
+
+    const trimmedLatitude = formData.latitude?.toString().trim();
+    if (!trimmedLatitude || !LAT_REGEX.test(trimmedLatitude)) {
+      setError('Please enter a valid latitude (-90 to 90)');
+      return false;
+    }
+
+    const trimmedLongitude = formData.longitude?.toString().trim();
+    if (!trimmedLongitude || !LONG_REGEX.test(trimmedLongitude)) {
+      setError('Please enter a valid longitude (-180 to 180)');
       return false;
     }
 
@@ -250,12 +264,16 @@ const CreateRestaurant = () => {
 
     try {
       const trimmedEmail = formData.email?.toString().trim();
+      const trimmedLatitude = formData.latitude?.toString().trim();
+      const trimmedLongitude = formData.longitude?.toString().trim();
       const interestIdParsed = parseInt(formData.interestId);
       const rattingParsed = parseFloat(formData.ratting);
 
       const payload = {
         ...formData,
         email: trimmedEmail,
+        latitude: trimmedLatitude,
+        longitude: trimmedLongitude,
         interestId: interestIdParsed > 0 ? interestIdParsed : null,
         ratting: Number.isNaN(rattingParsed) ? 0 : rattingParsed,
       };
@@ -453,6 +471,7 @@ const CreateRestaurant = () => {
                     value={formData.latitude}
                     onChange={handleChange}
                       placeholder="e.g., 19.305808"
+                    pattern={LAT_REGEX.source}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
@@ -469,6 +488,7 @@ const CreateRestaurant = () => {
                     value={formData.longitude}
                     onChange={handleChange}
                       placeholder="e.g., 73.063109"
+                    pattern={LONG_REGEX.source}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                   </div>
