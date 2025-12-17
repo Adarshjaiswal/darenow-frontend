@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 
+const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
 const CreateRestaurant = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -75,12 +77,14 @@ const CreateRestaurant = () => {
 
   const validateForm = () => {
     const trimmedEmail = formData.email?.toString().trim();
-    if (trimmedEmail) {
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(trimmedEmail)) {
-        setError('Please enter a valid email address');
-        return false;
-      }
+    if (!trimmedEmail) {
+      setError('Email is required');
+      return false;
+    }
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setError('Please enter a valid email address');
+      return false;
     }
 
     const trimmedRating = formData.ratting?.toString().trim();
@@ -245,11 +249,13 @@ const CreateRestaurant = () => {
     setLoading(true);
 
     try {
+      const trimmedEmail = formData.email?.toString().trim();
       const interestIdParsed = parseInt(formData.interestId);
       const rattingParsed = parseFloat(formData.ratting);
 
       const payload = {
         ...formData,
+        email: trimmedEmail,
         interestId: interestIdParsed > 0 ? interestIdParsed : null,
         ratting: Number.isNaN(rattingParsed) ? 0 : rattingParsed,
       };
@@ -392,7 +398,7 @@ const CreateRestaurant = () => {
                     name="email"
                     id="email"
                     required
-                    pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                    pattern={EMAIL_REGEX.source}
                     value={formData.email}
                     onChange={handleChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
