@@ -73,6 +73,58 @@ const CreateRestaurant = () => {
     fetchInterests();
   }, []);
 
+  const validateForm = () => {
+    const trimmedEmail = formData.email?.toString().trim();
+    if (trimmedEmail) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(trimmedEmail)) {
+        setError('Please enter a valid email address');
+        return false;
+      }
+    }
+
+    const trimmedRating = formData.ratting?.toString().trim();
+    if (trimmedRating) {
+      const numericRating = Number(trimmedRating);
+      const isInvalidRating = Number.isNaN(numericRating) || numericRating < 0 || numericRating > 5;
+      if (isInvalidRating) {
+        setError('Rating must be between 0 and 5');
+        return false;
+      }
+    }
+
+    const trimmedForTwo = formData.forTwo?.toString().trim();
+    if (trimmedForTwo) {
+      const validPrice = /^\d{1,5}$/;
+      if (!validPrice.test(trimmedForTwo)) {
+        setError('Price for Two must be numeric and up to 5 digits');
+        return false;
+      }
+    }
+
+    const trimmedOffer = formData.offerPercentage?.toString().trim();
+    if (trimmedOffer) {
+      const numericOffer = Number(trimmedOffer);
+      const isInvalidOffer = Number.isNaN(numericOffer) || numericOffer < 0 || numericOffer > 100;
+      if (isInvalidOffer) {
+        setError('Offer percentage must be between 0 and 100');
+        return false;
+      }
+    }
+
+    const trimmedCoupon = formData.couponPercentage?.toString().trim();
+    if (trimmedCoupon) {
+      const numericCoupon = Number(trimmedCoupon);
+      const isInvalidCoupon = Number.isNaN(numericCoupon) || numericCoupon < 0 || numericCoupon > 100;
+      if (isInvalidCoupon) {
+        setError('Coupon percentage must be between 0 and 100');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
@@ -187,13 +239,19 @@ const CreateRestaurant = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!validateForm()) {
+      return;
+    }
     setLoading(true);
 
     try {
+      const interestIdParsed = parseInt(formData.interestId);
+      const rattingParsed = parseFloat(formData.ratting);
+
       const payload = {
         ...formData,
-        interestId: parseInt(formData.interestId) || 0,
-        ratting: parseFloat(formData.ratting) || 0,
+        interestId: interestIdParsed > 0 ? interestIdParsed : null,
+        ratting: Number.isNaN(rattingParsed) ? 0 : rattingParsed,
       };
 
       const response = await api.post('/place', payload);
@@ -334,6 +392,7 @@ const CreateRestaurant = () => {
                     name="email"
                     id="email"
                     required
+                    pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                     value={formData.email}
                     onChange={handleChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -601,11 +660,14 @@ const CreateRestaurant = () => {
                     Price for Two
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="forTwo"
                     id="forTwo"
                     value={formData.forTwo}
                     onChange={handleChange}
+                    inputMode="numeric"
+                    min="0"
+                    max="99999"
                       placeholder="e.g., 1000"
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -613,7 +675,7 @@ const CreateRestaurant = () => {
 
                 <div>
                   <label htmlFor="interestId" className="block text-sm font-medium text-gray-700">
-                    Interest
+                    Interest (optional)
                   </label>
                   <select
                     name="interestId"
@@ -639,11 +701,14 @@ const CreateRestaurant = () => {
                     Offer Percentage
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="offerPercentage"
                     id="offerPercentage"
                     value={formData.offerPercentage}
                     onChange={handleChange}
+                    inputMode="decimal"
+                    min="0"
+                    max="100"
                       placeholder="e.g., 10"
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -654,11 +719,14 @@ const CreateRestaurant = () => {
                     Coupon Percentage
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="couponPercentage"
                     id="couponPercentage"
                     value={formData.couponPercentage}
                     onChange={handleChange}
+                    inputMode="decimal"
+                    min="0"
+                    max="100"
                       placeholder="e.g., 10"
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
