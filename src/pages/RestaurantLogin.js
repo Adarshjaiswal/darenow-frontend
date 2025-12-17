@@ -85,6 +85,11 @@ const RestaurantLogin = () => {
       navigate('/restaurant/bookings');
     } catch (error) {
       console.error('Restaurant login error:', error);
+      if (error.response?.status === 400) {
+        setError('Unauthorized user');
+        return;
+      }
+
       const errorMessage = error.response?.data?.message || 
                           error.response?.data?.responseMsg || 
                           error.response?.data?.error ||
