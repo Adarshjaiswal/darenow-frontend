@@ -131,19 +131,19 @@ const RestaurantList = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                       Restaurant
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                       Address
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                       Type
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                       Rating
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                       Actions
                     </th>
                   </tr>
@@ -170,8 +170,10 @@ const RestaurantList = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {restaurant.address || restaurant.location || 'N/A'}
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <div className="max-w-xs truncate">
+                          {restaurant.address || restaurant.location || 'N/A'}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
@@ -188,22 +190,22 @@ const RestaurantList = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                        <div className="flex flex-wrap gap-2">
                           <Link
                             to={`/restaurants/${restaurant.id || restaurant._id || restaurant.placeId}`}
-                            className="text-green-600 hover:text-green-900"
+                            className="text-green-600 hover:text-green-900 whitespace-nowrap"
                           >
                             View
                           </Link>
                           <Link
                             to={`/restaurants/edit/${restaurant.id || restaurant._id || restaurant.placeId}`}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-blue-600 hover:text-blue-900 whitespace-nowrap"
                           >
                             Edit
                           </Link>
                           <button
                             onClick={() => handleDelete(restaurant.id || restaurant._id || restaurant.placeId)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 whitespace-nowrap"
                           >
                             Delete
                           </button>

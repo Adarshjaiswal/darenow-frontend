@@ -5,6 +5,7 @@ import api from '../utils/api';
 const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const LAT_REGEX = /^-?(90(\.0+)?|[0-8]?\d(\.\d+)?)$/;
 const LONG_REGEX = /^-?(180(\.0+)?|1[0-7]\d(\.\d+)?|[0-9]?\d(\.\d+)?)$/;
+const PHONE_REGEX = /^\d{10}$/;
 
 const CreateRestaurant = () => {
   const navigate = useNavigate();
@@ -99,6 +100,44 @@ const CreateRestaurant = () => {
     if (!trimmedLongitude || !LONG_REGEX.test(trimmedLongitude)) {
       setError('Please enter a valid longitude (-180 to 180)');
       return false;
+    }
+
+    const trimmedMobileNumber = formData.mobileNumber?.toString().trim();
+    if (!trimmedMobileNumber) {
+      setError('Mobile number is required');
+      return false;
+    }
+    if (!PHONE_REGEX.test(trimmedMobileNumber)) {
+      setError('Mobile number must be exactly 10 digits');
+      return false;
+    }
+
+    // Validate meal timings - start time and end time cannot be the same
+    if (formData.breakfast.available) {
+      if (formData.breakfast.startTime && formData.breakfast.endTime) {
+        if (formData.breakfast.startTime === formData.breakfast.endTime) {
+          setError('Breakfast start time and end time cannot be the same');
+          return false;
+        }
+      }
+    }
+
+    if (formData.lunch.available) {
+      if (formData.lunch.startTime && formData.lunch.endTime) {
+        if (formData.lunch.startTime === formData.lunch.endTime) {
+          setError('Lunch start time and end time cannot be the same');
+          return false;
+        }
+      }
+    }
+
+    if (formData.dinner.available) {
+      if (formData.dinner.startTime && formData.dinner.endTime) {
+        if (formData.dinner.startTime === formData.dinner.endTime) {
+          setError('Dinner start time and end time cannot be the same');
+          return false;
+        }
+      }
     }
 
     const trimmedRating = formData.ratting?.toString().trim();
@@ -266,6 +305,7 @@ const CreateRestaurant = () => {
       const trimmedEmail = formData.email?.toString().trim();
       const trimmedLatitude = formData.latitude?.toString().trim();
       const trimmedLongitude = formData.longitude?.toString().trim();
+      const trimmedMobileNumber = formData.mobileNumber?.toString().trim();
       const interestIdParsed = parseInt(formData.interestId);
       const rattingParsed = parseFloat(formData.ratting);
 
@@ -274,6 +314,7 @@ const CreateRestaurant = () => {
         email: trimmedEmail,
         latitude: trimmedLatitude,
         longitude: trimmedLongitude,
+        mobileNumber: trimmedMobileNumber,
         interestId: interestIdParsed > 0 ? interestIdParsed : null,
         ratting: Number.isNaN(rattingParsed) ? 0 : rattingParsed,
       };
@@ -432,8 +473,11 @@ const CreateRestaurant = () => {
                     name="mobileNumber"
                     id="mobileNumber"
                     required
+                    pattern={PHONE_REGEX.source}
+                    maxLength="10"
                     value={formData.mobileNumber}
                     onChange={handleChange}
+                    placeholder="10 digit mobile number"
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
