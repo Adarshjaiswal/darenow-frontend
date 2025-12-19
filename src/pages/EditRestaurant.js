@@ -2,6 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '../utils/api';
 
+const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+const LAT_REGEX = /^-?(90(\.0+)?|[0-8]?\d(\.\d+)?)$/;
+const LONG_REGEX = /^-?(180(\.0+)?|1[0-7]\d(\.\d+)?|[0-9]?\d(\.\d+)?)$/;
+
 const EditRestaurant = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -138,6 +142,67 @@ const EditRestaurant = () => {
     fetchRestaurant();
   }, [fetchRestaurant]);
 
+  const validateForm = () => {
+    const trimmedEmail = formData.email?.toString().trim();
+    if (trimmedEmail && !EMAIL_REGEX.test(trimmedEmail)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    const trimmedLatitude = formData.latitude?.toString().trim();
+    if (trimmedLatitude && !LAT_REGEX.test(trimmedLatitude)) {
+      setError('Please enter a valid latitude (-90 to 90)');
+      return false;
+    }
+
+    const trimmedLongitude = formData.longitude?.toString().trim();
+    if (trimmedLongitude && !LONG_REGEX.test(trimmedLongitude)) {
+      setError('Please enter a valid longitude (-180 to 180)');
+      return false;
+    }
+
+    const trimmedRating = formData.ratting?.toString().trim();
+    if (trimmedRating) {
+      const numericRating = Number(trimmedRating);
+      const isInvalidRating = Number.isNaN(numericRating) || numericRating < 0 || numericRating > 5;
+      if (isInvalidRating) {
+        setError('Rating must be between 0 and 5');
+        return false;
+      }
+    }
+
+    const trimmedForTwo = formData.forTwo?.toString().trim();
+    if (trimmedForTwo) {
+      const validPrice = /^\d{1,5}$/;
+      if (!validPrice.test(trimmedForTwo)) {
+        setError('Price for Two must be numeric and up to 5 digits');
+        return false;
+      }
+    }
+
+    const trimmedOffer = formData.offerPercentage?.toString().trim();
+    if (trimmedOffer) {
+      const numericOffer = Number(trimmedOffer);
+      const isInvalidOffer = Number.isNaN(numericOffer) || numericOffer < 0 || numericOffer > 100;
+      if (isInvalidOffer) {
+        setError('Offer percentage must be between 0 and 100');
+        return false;
+      }
+    }
+
+    const trimmedCoupon = formData.couponPercentage?.toString().trim();
+    if (trimmedCoupon) {
+      const numericCoupon = Number(trimmedCoupon);
+      const isInvalidCoupon = Number.isNaN(numericCoupon) || numericCoupon < 0 || numericCoupon > 100;
+      if (isInvalidCoupon) {
+        setError('Coupon percentage must be between 0 and 100');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
@@ -252,6 +317,11 @@ const EditRestaurant = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setSaving(true);
 
     try {
@@ -264,11 +334,20 @@ const EditRestaurant = () => {
       if (formData.address) payload.address = formData.address;
       if (formData.name) payload.name = formData.name;
       if (formData.description) payload.description = formData.description;
-      if (formData.email) payload.email = formData.email;
+      if (formData.email) {
+        const trimmedEmail = formData.email.toString().trim();
+        if (trimmedEmail) payload.email = trimmedEmail;
+      }
       if (formData.mobileNumber) payload.mobileNumber = formData.mobileNumber;
       if (formData.password && formData.password.trim()) payload.password = formData.password;
-      if (formData.latitude) payload.latitude = formData.latitude;
-      if (formData.longitude) payload.longitude = formData.longitude;
+      if (formData.latitude) {
+        const trimmedLatitude = formData.latitude.toString().trim();
+        if (trimmedLatitude) payload.latitude = trimmedLatitude;
+      }
+      if (formData.longitude) {
+        const trimmedLongitude = formData.longitude.toString().trim();
+        if (trimmedLongitude) payload.longitude = trimmedLongitude;
+      }
       if (formData.openingTime) payload.openingTime = formData.openingTime;
       if (formData.closingTime) payload.closingTime = formData.closingTime;
       if (formData.forTwo) payload.forTwo = formData.forTwo;
@@ -406,6 +485,7 @@ const EditRestaurant = () => {
                       type="email"
                       name="email"
                       id="email"
+                      pattern={EMAIL_REGEX.source}
                       value={formData.email}
                       onChange={handleChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -460,6 +540,8 @@ const EditRestaurant = () => {
                       id="latitude"
                       value={formData.latitude}
                     onChange={handleChange}
+                      placeholder="e.g., 19.305808"
+                      pattern={LAT_REGEX.source}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
@@ -474,6 +556,8 @@ const EditRestaurant = () => {
                       id="longitude"
                       value={formData.longitude}
                       onChange={handleChange}
+                      placeholder="e.g., 73.063109"
+                      pattern={LONG_REGEX.source}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
