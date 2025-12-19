@@ -143,6 +143,26 @@ const EditRestaurant = () => {
     fetchRestaurant();
   }, [fetchRestaurant]);
 
+  // Helper function to convert time string (HH:MM) to minutes for comparison
+  const timeToMinutes = (timeStr) => {
+    if (!timeStr) return null;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // Helper function to check if two time ranges overlap
+  const doTimesOverlap = (start1, end1, start2, end2) => {
+    if (!start1 || !end1 || !start2 || !end2) return false;
+    
+    const start1Min = timeToMinutes(start1);
+    const end1Min = timeToMinutes(end1);
+    const start2Min = timeToMinutes(start2);
+    const end2Min = timeToMinutes(end2);
+    
+    // Check if ranges overlap: start1 < end2 && start2 < end1
+    return start1Min < end2Min && start2Min < end1Min;
+  };
+
   const validateForm = () => {
     const trimmedEmail = formData.email?.toString().trim();
     if (trimmedEmail && !EMAIL_REGEX.test(trimmedEmail)) {
@@ -191,6 +211,46 @@ const EditRestaurant = () => {
       if (formData.dinner.startTime && formData.dinner.endTime) {
         if (formData.dinner.startTime === formData.dinner.endTime) {
           setError('Dinner start time and end time cannot be the same');
+          return false;
+        }
+      }
+    }
+
+    // Validate meal timings - check for overlaps between different meals
+    if (formData.breakfast.available && formData.breakfast.startTime && formData.breakfast.endTime) {
+      if (formData.lunch.available && formData.lunch.startTime && formData.lunch.endTime) {
+        if (doTimesOverlap(
+          formData.breakfast.startTime,
+          formData.breakfast.endTime,
+          formData.lunch.startTime,
+          formData.lunch.endTime
+        )) {
+          setError('Breakfast and Lunch times cannot overlap');
+          return false;
+        }
+      }
+      if (formData.dinner.available && formData.dinner.startTime && formData.dinner.endTime) {
+        if (doTimesOverlap(
+          formData.breakfast.startTime,
+          formData.breakfast.endTime,
+          formData.dinner.startTime,
+          formData.dinner.endTime
+        )) {
+          setError('Breakfast and Dinner times cannot overlap');
+          return false;
+        }
+      }
+    }
+
+    if (formData.lunch.available && formData.lunch.startTime && formData.lunch.endTime) {
+      if (formData.dinner.available && formData.dinner.startTime && formData.dinner.endTime) {
+        if (doTimesOverlap(
+          formData.lunch.startTime,
+          formData.lunch.endTime,
+          formData.dinner.startTime,
+          formData.dinner.endTime
+        )) {
+          setError('Lunch and Dinner times cannot overlap');
           return false;
         }
       }
