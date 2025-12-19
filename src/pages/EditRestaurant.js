@@ -163,6 +163,24 @@ const EditRestaurant = () => {
     return start1Min < end2Min && start2Min < end1Min;
   };
 
+  // Helper function to check if a time is within a range (handles midnight crossover)
+  const isTimeInRange = (time, rangeStart, rangeEnd) => {
+    if (!time || !rangeStart || !rangeEnd) return false;
+    
+    const timeMin = timeToMinutes(time);
+    const rangeStartMin = timeToMinutes(rangeStart);
+    const rangeEndMin = timeToMinutes(rangeEnd);
+    
+    // Handle case where closing time is next day (e.g., 22:00 to 02:00)
+    if (rangeEndMin < rangeStartMin) {
+      // Range crosses midnight
+      return timeMin >= rangeStartMin || timeMin <= rangeEndMin;
+    } else {
+      // Normal range within same day
+      return timeMin >= rangeStartMin && timeMin <= rangeEndMin;
+    }
+  };
+
   const validateForm = () => {
     const trimmedEmail = formData.email?.toString().trim();
     if (trimmedEmail && !EMAIL_REGEX.test(trimmedEmail)) {
@@ -186,6 +204,14 @@ const EditRestaurant = () => {
     if (trimmedMobileNumber && !PHONE_REGEX.test(trimmedMobileNumber)) {
       setError('Mobile number must be exactly 10 digits');
       return false;
+    }
+
+    // Validate opening and closing time cannot be the same
+    if (formData.openingTime && formData.closingTime) {
+      if (formData.openingTime === formData.closingTime) {
+        setError('Opening time and closing time cannot be the same');
+        return false;
+      }
     }
 
     // Validate meal timings - start time and end time cannot be the same
@@ -251,6 +277,45 @@ const EditRestaurant = () => {
           formData.dinner.endTime
         )) {
           setError('Lunch and Dinner times cannot overlap');
+          return false;
+        }
+      }
+    }
+
+    // Validate meal times must be within opening and closing time
+    if (formData.openingTime && formData.closingTime) {
+      // Validate breakfast times
+      if (formData.breakfast.available) {
+        if (formData.breakfast.startTime && !isTimeInRange(formData.breakfast.startTime, formData.openingTime, formData.closingTime)) {
+          setError('Breakfast start time must be between opening and closing time');
+          return false;
+        }
+        if (formData.breakfast.endTime && !isTimeInRange(formData.breakfast.endTime, formData.openingTime, formData.closingTime)) {
+          setError('Breakfast end time must be between opening and closing time');
+          return false;
+        }
+      }
+
+      // Validate lunch times
+      if (formData.lunch.available) {
+        if (formData.lunch.startTime && !isTimeInRange(formData.lunch.startTime, formData.openingTime, formData.closingTime)) {
+          setError('Lunch start time must be between opening and closing time');
+          return false;
+        }
+        if (formData.lunch.endTime && !isTimeInRange(formData.lunch.endTime, formData.openingTime, formData.closingTime)) {
+          setError('Lunch end time must be between opening and closing time');
+          return false;
+        }
+      }
+
+      // Validate dinner times
+      if (formData.dinner.available) {
+        if (formData.dinner.startTime && !isTimeInRange(formData.dinner.startTime, formData.openingTime, formData.closingTime)) {
+          setError('Dinner start time must be between opening and closing time');
+          return false;
+        }
+        if (formData.dinner.endTime && !isTimeInRange(formData.dinner.endTime, formData.openingTime, formData.closingTime)) {
+          setError('Dinner end time must be between opening and closing time');
           return false;
         }
       }
