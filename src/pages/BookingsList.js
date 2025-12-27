@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const BookingsList = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const BookingsList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [restaurant, setRestaurant] = useState(null);
+  const [cancelModal, setCancelModal] = useState({ isOpen: false, bookingId: null });
 
   useEffect(() => {
     // Check if restaurant is logged in
@@ -102,24 +104,22 @@ const BookingsList = () => {
     }
   }, [restaurant, pageNo, fetchBookings]);
 
-  const handleCancel = async (bookingId) => {
-    if (window.confirm('Are you sure you want to cancel this booking?')) {
+  const handleCancel = (bookingId) => {
+    setCancelModal({ isOpen: true, bookingId });
+  };
+
+  const confirmCancel = async () => {
+    if (cancelModal.bookingId) {
       try {
-        await api.delete(`/table-booking/${bookingId}`);
+        await api.delete(`/table-booking/${cancelModal.bookingId}`);
+        setCancelModal({ isOpen: false, bookingId: null });
         fetchBookings(pageNo);
       } catch (error) {
         setError(error.response?.data?.message || error.message || 'Failed to cancel booking');
         console.error('Error canceling booking:', error);
+        setCancelModal({ isOpen: false, bookingId: null });
       }
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('restaurantToken');
-    localStorage.removeItem('restaurant');
-    // Trigger event to update navbar
-    window.dispatchEvent(new Event('restaurantLogout'));
-    navigate('/restaurant/login');
   };
 
   const handlePageChange = (newPage) => {
@@ -151,20 +151,12 @@ const BookingsList = () => {
                   </p>
                 )}
               </div>
-              <div className="flex space-x-3">
-                <Link
-                  to="/restaurant/create-booking"
-                  className="bg-[#EB422B] text-white px-4 py-2 rounded-md hover:bg-[#EB422B] transition-colors"
-                >
-                  Create Booking
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
+              <Link
+                to="/restaurant/create-booking"
+                className="bg-[#EB422B] text-white px-4 py-2 rounded-md hover:bg-[#EB422B] transition-colors"
+              >
+                Create Booking
+              </Link>
             </div>
           </div>
 
@@ -339,6 +331,19 @@ const BookingsList = () => {
           )}
         </div>
       </div>
+
+      {/* Cancel Booking Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={cancelModal.isOpen}
+        onClose={() => setCancelModal({ isOpen: false, bookingId: null })}
+        onConfirm={confirmCancel}
+        title="Cancel Booking"
+        message="Are you sure you want to cancel this booking? This action cannot be undone."
+        confirmText="Yes, Cancel Booking"
+        cancelText="Keep Booking"
+        type="warning"
+      />
+
     </div>
   );
 };

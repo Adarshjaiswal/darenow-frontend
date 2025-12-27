@@ -2,12 +2,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
+  // Check if user is authenticated (has token) to add margin for sidebar
+  const hasToken = localStorage.getItem('token');
+  const footerMargin = hasToken ? 'ml-64' : '';
+
   return (
-    <footer className="bg-gray-800 text-white">
+    <footer className={`bg-gray-800 text-white ${footerMargin}`}>
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
-  <h3 className="text-2xl font-bold text-blue-400 mb-4">DareNow</h3>
+            <div className="mb-4">
+              <img 
+                src="/darenow-logo.png" 
+                alt="DareNow Logo" 
+                className="h-10 w-auto"
+              />
+            </div>
             <p className="text-gray-300 mb-4">
               Discover and manage the best restaurants in your area. 
               From fine dining to casual eats, we've got you covered.
@@ -17,11 +27,6 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-300 hover:text-blue-400 transition-colors">
-                  Home
-                </Link>
-              </li>
               <li>
                 <Link to="/contact" className="text-gray-300 hover:text-blue-400 transition-colors">
                   Contact Us

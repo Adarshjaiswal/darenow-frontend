@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api from '../utils/api';
+import TimePicker from '../components/TimePicker';
+import { useToast } from '../components/Toast';
+import Sidebar from '../components/Sidebar';
 
 const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const LAT_REGEX = /^-?(90(\.0+)?|[0-8]?\d(\.\d+)?)$/;
@@ -46,7 +49,8 @@ const EditRestaurant = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const { showToast } = useToast();
   const [interests, setInterests] = useState([]);
   const [loadingInterests, setLoadingInterests] = useState(true);
   
@@ -132,7 +136,7 @@ const EditRestaurant = () => {
         setExistingBeveragesMenuImages(Array.isArray(restaurant.beveragesMenuImages) ? restaurant.beveragesMenuImages : [restaurant.beveragesMenuImages]);
       }
     } catch (error) {
-      setError('Failed to fetch restaurant details');
+      showToast('Failed to fetch restaurant details', 'error');
       console.error('Error fetching restaurant:', error);
     } finally {
       setLoading(false);
@@ -182,35 +186,55 @@ const EditRestaurant = () => {
   };
 
   const validateForm = () => {
+    const errors = {};
+    let hasErrors = false;
+
+    // Validate email (only if provided)
     const trimmedEmail = formData.email?.toString().trim();
     if (trimmedEmail && !EMAIL_REGEX.test(trimmedEmail)) {
-      setError('Please enter a valid email address');
-      return false;
+      errors.email = 'Please enter a valid email address';
+      hasErrors = true;
     }
 
+    // Validate latitude (only if provided)
     const trimmedLatitude = formData.latitude?.toString().trim();
     if (trimmedLatitude && !LAT_REGEX.test(trimmedLatitude)) {
-      setError('Please enter a valid latitude (-90 to 90)');
-      return false;
+      errors.latitude = 'Please enter a valid latitude (-90 to 90)';
+      hasErrors = true;
     }
 
+    // Validate longitude (only if provided)
     const trimmedLongitude = formData.longitude?.toString().trim();
     if (trimmedLongitude && !LONG_REGEX.test(trimmedLongitude)) {
-      setError('Please enter a valid longitude (-180 to 180)');
-      return false;
+      errors.longitude = 'Please enter a valid longitude (-180 to 180)';
+      hasErrors = true;
     }
 
+    // Validate mobile number (only if provided)
     const trimmedMobileNumber = formData.mobileNumber?.toString().trim();
     if (trimmedMobileNumber && !PHONE_REGEX.test(trimmedMobileNumber)) {
-      setError('Mobile number must be exactly 10 digits');
-      return false;
+      errors.mobileNumber = 'Mobile number must be exactly 10 digits';
+      hasErrors = true;
+    }
+
+    // Validate opening time is required
+    if (!formData.openingTime) {
+      errors.openingTime = 'Opening time is required';
+      hasErrors = true;
+    }
+
+    // Validate closing time is required
+    if (!formData.closingTime) {
+      errors.closingTime = 'Closing time is required';
+      hasErrors = true;
     }
 
     // Validate opening and closing time cannot be the same
     if (formData.openingTime && formData.closingTime) {
       if (formData.openingTime === formData.closingTime) {
-        setError('Opening time and closing time cannot be the same');
-        return false;
+        errors.openingTime = 'Opening time and closing time cannot be the same';
+        errors.closingTime = 'Opening time and closing time cannot be the same';
+        hasErrors = true;
       }
     }
 
@@ -218,8 +242,9 @@ const EditRestaurant = () => {
     if (formData.breakfast.available) {
       if (formData.breakfast.startTime && formData.breakfast.endTime) {
         if (formData.breakfast.startTime === formData.breakfast.endTime) {
-          setError('Breakfast start time and end time cannot be the same');
-          return false;
+          errors['breakfast.startTime'] = 'Breakfast start time and end time cannot be the same';
+          errors['breakfast.endTime'] = 'Breakfast start time and end time cannot be the same';
+          hasErrors = true;
         }
       }
     }
@@ -227,8 +252,9 @@ const EditRestaurant = () => {
     if (formData.lunch.available) {
       if (formData.lunch.startTime && formData.lunch.endTime) {
         if (formData.lunch.startTime === formData.lunch.endTime) {
-          setError('Lunch start time and end time cannot be the same');
-          return false;
+          errors['lunch.startTime'] = 'Lunch start time and end time cannot be the same';
+          errors['lunch.endTime'] = 'Lunch start time and end time cannot be the same';
+          hasErrors = true;
         }
       }
     }
@@ -236,8 +262,9 @@ const EditRestaurant = () => {
     if (formData.dinner.available) {
       if (formData.dinner.startTime && formData.dinner.endTime) {
         if (formData.dinner.startTime === formData.dinner.endTime) {
-          setError('Dinner start time and end time cannot be the same');
-          return false;
+          errors['dinner.startTime'] = 'Dinner start time and end time cannot be the same';
+          errors['dinner.endTime'] = 'Dinner start time and end time cannot be the same';
+          hasErrors = true;
         }
       }
     }
@@ -251,8 +278,9 @@ const EditRestaurant = () => {
           formData.lunch.startTime,
           formData.lunch.endTime
         )) {
-          setError('Breakfast and Lunch times cannot overlap');
-          return false;
+          errors['breakfast.startTime'] = 'Breakfast and Lunch times cannot overlap';
+          errors['lunch.startTime'] = 'Breakfast and Lunch times cannot overlap';
+          hasErrors = true;
         }
       }
       if (formData.dinner.available && formData.dinner.startTime && formData.dinner.endTime) {
@@ -262,8 +290,9 @@ const EditRestaurant = () => {
           formData.dinner.startTime,
           formData.dinner.endTime
         )) {
-          setError('Breakfast and Dinner times cannot overlap');
-          return false;
+          errors['breakfast.startTime'] = 'Breakfast and Dinner times cannot overlap';
+          errors['dinner.startTime'] = 'Breakfast and Dinner times cannot overlap';
+          hasErrors = true;
         }
       }
     }
@@ -276,8 +305,9 @@ const EditRestaurant = () => {
           formData.dinner.startTime,
           formData.dinner.endTime
         )) {
-          setError('Lunch and Dinner times cannot overlap');
-          return false;
+          errors['lunch.startTime'] = 'Lunch and Dinner times cannot overlap';
+          errors['dinner.startTime'] = 'Lunch and Dinner times cannot overlap';
+          hasErrors = true;
         }
       }
     }
@@ -287,87 +317,102 @@ const EditRestaurant = () => {
       // Validate breakfast times
       if (formData.breakfast.available) {
         if (formData.breakfast.startTime && !isTimeInRange(formData.breakfast.startTime, formData.openingTime, formData.closingTime)) {
-          setError('Breakfast start time must be between opening and closing time');
-          return false;
+          errors['breakfast.startTime'] = 'Breakfast start time must be between opening and closing time';
+          hasErrors = true;
         }
         if (formData.breakfast.endTime && !isTimeInRange(formData.breakfast.endTime, formData.openingTime, formData.closingTime)) {
-          setError('Breakfast end time must be between opening and closing time');
-          return false;
+          errors['breakfast.endTime'] = 'Breakfast end time must be between opening and closing time';
+          hasErrors = true;
         }
       }
 
       // Validate lunch times
       if (formData.lunch.available) {
         if (formData.lunch.startTime && !isTimeInRange(formData.lunch.startTime, formData.openingTime, formData.closingTime)) {
-          setError('Lunch start time must be between opening and closing time');
-          return false;
+          errors['lunch.startTime'] = 'Lunch start time must be between opening and closing time';
+          hasErrors = true;
         }
         if (formData.lunch.endTime && !isTimeInRange(formData.lunch.endTime, formData.openingTime, formData.closingTime)) {
-          setError('Lunch end time must be between opening and closing time');
-          return false;
+          errors['lunch.endTime'] = 'Lunch end time must be between opening and closing time';
+          hasErrors = true;
         }
       }
 
       // Validate dinner times
       if (formData.dinner.available) {
         if (formData.dinner.startTime && !isTimeInRange(formData.dinner.startTime, formData.openingTime, formData.closingTime)) {
-          setError('Dinner start time must be between opening and closing time');
-          return false;
+          errors['dinner.startTime'] = 'Dinner start time must be between opening and closing time';
+          hasErrors = true;
         }
         if (formData.dinner.endTime && !isTimeInRange(formData.dinner.endTime, formData.openingTime, formData.closingTime)) {
-          setError('Dinner end time must be between opening and closing time');
-          return false;
+          errors['dinner.endTime'] = 'Dinner end time must be between opening and closing time';
+          hasErrors = true;
         }
       }
     }
 
+    // Validate rating (only if provided)
     const trimmedRating = formData.ratting?.toString().trim();
     if (trimmedRating) {
       const numericRating = Number(trimmedRating);
       const isInvalidRating = Number.isNaN(numericRating) || numericRating < 0 || numericRating > 5;
       if (isInvalidRating) {
-        setError('Rating must be between 0 and 5');
-        return false;
+        errors.ratting = 'Rating must be between 0 and 5';
+        hasErrors = true;
       }
     }
 
+    // Validate forTwo (only if provided)
     const trimmedForTwo = formData.forTwo?.toString().trim();
     if (trimmedForTwo) {
       const validPrice = /^\d{1,5}$/;
       if (!validPrice.test(trimmedForTwo)) {
-        setError('Price for Two must be numeric and up to 5 digits');
-        return false;
+        errors.forTwo = 'Price for Two must be numeric and up to 5 digits';
+        hasErrors = true;
       }
     }
 
+    // Validate offerPercentage (only if provided)
     const trimmedOffer = formData.offerPercentage?.toString().trim();
     if (trimmedOffer) {
       const numericOffer = Number(trimmedOffer);
       const isInvalidOffer = Number.isNaN(numericOffer) || numericOffer < 0 || numericOffer > 100;
       if (isInvalidOffer) {
-        setError('Offer percentage must be between 0 and 100');
-        return false;
+        errors.offerPercentage = 'Offer percentage must be between 0 and 100';
+        hasErrors = true;
       }
     }
 
+    // Validate couponPercentage (only if provided)
     const trimmedCoupon = formData.couponPercentage?.toString().trim();
     if (trimmedCoupon) {
       const numericCoupon = Number(trimmedCoupon);
       const isInvalidCoupon = Number.isNaN(numericCoupon) || numericCoupon < 0 || numericCoupon > 100;
       if (isInvalidCoupon) {
-        setError('Coupon percentage must be between 0 and 100');
-        return false;
+        errors.couponPercentage = 'Coupon percentage must be between 0 and 100';
+        hasErrors = true;
       }
     }
 
-    return true;
+    setFieldErrors(errors);
+    return !hasErrors;
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    
     if (name.startsWith('breakfast.') || name.startsWith('lunch.') || name.startsWith('dinner.')) {
       const [mealType, field] = name.split('.');
+      const fieldKey = `${mealType}.${field}`;
       setFormData({
         ...formData,
         [mealType]: {
@@ -375,12 +420,51 @@ const EditRestaurant = () => {
           [field]: type === 'checkbox' ? checked : value,
         },
       });
+      // Clear meal time errors
+      if (fieldErrors[fieldKey]) {
+        setFieldErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldKey];
+          return newErrors;
+        });
+      }
     } else {
     setFormData({
       ...formData,
         [name]: name === 'interestId' ? parseInt(value) || 0 : value,
       });
     }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoImage(null);
+    setLogoPreview(null);
+    // Clear the file input
+    const fileInput = document.getElementById('logoImage');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const handleRemoveDetailImage = (index) => {
+    const newImages = detailImages.filter((_, i) => i !== index);
+    const newPreviews = detailPreviews.filter((_, i) => i !== index);
+    setDetailImages(newImages);
+    setDetailPreviews(newPreviews);
+  };
+
+  const handleRemoveFoodMenuImage = (index) => {
+    const newImages = foodMenuImages.filter((_, i) => i !== index);
+    const newPreviews = foodMenuPreviews.filter((_, i) => i !== index);
+    setFoodMenuImages(newImages);
+    setFoodMenuPreviews(newPreviews);
+  };
+
+  const handleRemoveBeveragesMenuImage = (index) => {
+    const newImages = beveragesMenuImages.filter((_, i) => i !== index);
+    const newPreviews = beveragesMenuPreviews.filter((_, i) => i !== index);
+    setBeveragesMenuImages(newImages);
+    setBeveragesMenuPreviews(newPreviews);
   };
 
   const handleImageChange = (type, files) => {
@@ -476,7 +560,7 @@ const EditRestaurant = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setFieldErrors({});
     
     if (!validateForm()) {
       return;
@@ -548,7 +632,72 @@ const EditRestaurant = () => {
 
       navigate('/restaurants');
     } catch (error) {
-      setError(error.response?.data?.message || error.message || 'Failed to update restaurant');
+      const status = error.response?.status;
+      const errorData = error.response?.data;
+      
+      // Check if error contains field-specific errors
+      if (errorData?.errors && typeof errorData.errors === 'object') {
+        // Map API field errors to fieldErrors state
+        const apiFieldErrors = {};
+        Object.keys(errorData.errors).forEach((field) => {
+          const fieldName = field.toLowerCase();
+          // Map common field names
+          if (fieldName.includes('email')) {
+            apiFieldErrors.email = Array.isArray(errorData.errors[field]) 
+              ? errorData.errors[field][0] 
+              : errorData.errors[field];
+          } else if (fieldName.includes('mobile') || fieldName.includes('phone')) {
+            apiFieldErrors.mobileNumber = Array.isArray(errorData.errors[field]) 
+              ? errorData.errors[field][0] 
+              : errorData.errors[field];
+          } else if (fieldName.includes('latitude')) {
+            apiFieldErrors.latitude = Array.isArray(errorData.errors[field]) 
+              ? errorData.errors[field][0] 
+              : errorData.errors[field];
+          } else if (fieldName.includes('longitude')) {
+            apiFieldErrors.longitude = Array.isArray(errorData.errors[field]) 
+              ? errorData.errors[field][0] 
+              : errorData.errors[field];
+          } else if (fieldName.includes('name')) {
+            apiFieldErrors.name = Array.isArray(errorData.errors[field]) 
+              ? errorData.errors[field][0] 
+              : errorData.errors[field];
+          } else if (fieldName.includes('address')) {
+            apiFieldErrors.address = Array.isArray(errorData.errors[field]) 
+              ? errorData.errors[field][0] 
+              : errorData.errors[field];
+          } else {
+            // Try to match field name directly
+            apiFieldErrors[field] = Array.isArray(errorData.errors[field]) 
+              ? errorData.errors[field][0] 
+              : errorData.errors[field];
+          }
+        });
+        
+        if (Object.keys(apiFieldErrors).length > 0) {
+          setFieldErrors(prev => ({ ...prev, ...apiFieldErrors }));
+        }
+        
+        // Show toast with general message
+        const errorMessage = errorData?.message || 
+                            errorData?.error || 
+                            'Please check the highlighted fields';
+        showToast(errorMessage, 'error');
+      } else if (status === 500) {
+        showToast('Something went wrong', 'error');
+      } else if (status === 400) {
+        const errorMessage = errorData?.message || 
+                            errorData?.error || 
+                            error.message || 
+                            'Invalid request. Please check your input.';
+        showToast(errorMessage, 'error');
+      } else {
+        const errorMessage = errorData?.message || 
+                            errorData?.error || 
+                            error.message || 
+                            'Failed to update restaurant';
+        showToast(errorMessage, 'error');
+      }
     } finally {
       setSaving(false);
       setUploadingImages(false);
@@ -565,8 +714,19 @@ const EditRestaurant = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <Sidebar />
+      <div className="ml-64">
+        <div className="w-full py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
+          <div className="mb-6">
+            <Link
+              to="/restaurants"
+              className="text-blue-600 hover:text-blue-900 mb-4 inline-block"
+            >
+              ← Back to Restaurants
+            </Link>
+          </div>
+
           <div className="mb-8">
             <div className="flex justify-between items-center">
               <div>
@@ -584,11 +744,6 @@ const EditRestaurant = () => {
             </div>
           </div>
 
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-              {error}
-            </div>
-          )}
 
           <div className="bg-white shadow rounded-lg">
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -605,20 +760,6 @@ const EditRestaurant = () => {
                     name="name"
                     id="name"
                     value={formData.name}
-                    onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                      Address
-                  </label>
-                  <input
-                    type="text"
-                      name="address"
-                      id="address"
-                      value={formData.address}
                     onChange={handleChange}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
@@ -651,8 +792,13 @@ const EditRestaurant = () => {
                       pattern={EMAIL_REGEX.source}
                       value={formData.email}
                       onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                        fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {fieldErrors.email && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                    )}
                   </div>
 
                   <div>
@@ -668,8 +814,13 @@ const EditRestaurant = () => {
                       value={formData.mobileNumber}
                       onChange={handleChange}
                       placeholder="10 digit mobile number"
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                        fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {fieldErrors.mobileNumber && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.mobileNumber}</p>
+                    )}
                   </div>
                 </div>
 
@@ -695,37 +846,63 @@ const EditRestaurant = () => {
               {/* Location */}
               <div className="border-b border-gray-200 pb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Location</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
                 <div>
-                    <label htmlFor="latitude" className="block text-sm font-medium text-gray-700">
-                      Latitude
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                      Address
                   </label>
                   <input
                     type="text"
-                      name="latitude"
-                      id="latitude"
-                      value={formData.latitude}
+                      name="address"
+                      id="address"
+                      value={formData.address}
                     onChange={handleChange}
-                      placeholder="e.g., 19.305808"
-                      pattern={LAT_REGEX.source}
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
 
-                <div>
-                    <label htmlFor="longitude" className="block text-sm font-medium text-gray-700">
-                      Longitude
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                      <label htmlFor="latitude" className="block text-sm font-medium text-gray-700">
+                        Latitude
                     </label>
                     <input
                       type="text"
-                      name="longitude"
-                      id="longitude"
-                      value={formData.longitude}
+                        name="latitude"
+                        id="latitude"
+                        value={formData.latitude}
                       onChange={handleChange}
-                      placeholder="e.g., 73.063109"
-                      pattern={LONG_REGEX.source}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="e.g., 19.305808"
+                        pattern={LAT_REGEX.source}
+                        className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                          fieldErrors.latitude ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
+                    {fieldErrors.latitude && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.latitude}</p>
+                    )}
+                  </div>
+
+                  <div>
+                      <label htmlFor="longitude" className="block text-sm font-medium text-gray-700">
+                        Longitude
+                      </label>
+                      <input
+                        type="text"
+                        name="longitude"
+                        id="longitude"
+                        value={formData.longitude}
+                        onChange={handleChange}
+                        placeholder="e.g., 73.063109"
+                        pattern={LONG_REGEX.source}
+                        className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                          fieldErrors.longitude ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {fieldErrors.longitude && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.longitude}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -738,13 +915,13 @@ const EditRestaurant = () => {
                     <label htmlFor="openingTime" className="block text-sm font-medium text-gray-700">
                       Opening Time
                     </label>
-                    <input
-                      type="time"
+                    <TimePicker
                       name="openingTime"
                       id="openingTime"
                       value={formData.openingTime}
                       onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      error={fieldErrors.openingTime}
                     />
                   </div>
 
@@ -752,13 +929,13 @@ const EditRestaurant = () => {
                     <label htmlFor="closingTime" className="block text-sm font-medium text-gray-700">
                       Closing Time
                     </label>
-                    <input
-                      type="time"
+                    <TimePicker
                       name="closingTime"
                       id="closingTime"
                       value={formData.closingTime}
                       onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      error={fieldErrors.closingTime}
                     />
                   </div>
                 </div>
@@ -789,26 +966,26 @@ const EditRestaurant = () => {
                         <label htmlFor="breakfast.startTime" className="block text-sm font-medium text-gray-700">
                           Start Time
                         </label>
-                        <input
-                          type="time"
+                        <TimePicker
                           name="breakfast.startTime"
                           id="breakfast.startTime"
                           value={formData.breakfast.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          error={fieldErrors['breakfast.startTime']}
                         />
                       </div>
                       <div>
                         <label htmlFor="breakfast.endTime" className="block text-sm font-medium text-gray-700">
                           End Time
                         </label>
-                        <input
-                          type="time"
+                        <TimePicker
                           name="breakfast.endTime"
                           id="breakfast.endTime"
                           value={formData.breakfast.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          error={fieldErrors['breakfast.endTime']}
                         />
                       </div>
                     </div>
@@ -836,26 +1013,26 @@ const EditRestaurant = () => {
                         <label htmlFor="lunch.startTime" className="block text-sm font-medium text-gray-700">
                           Start Time
                         </label>
-                        <input
-                          type="time"
+                        <TimePicker
                           name="lunch.startTime"
                           id="lunch.startTime"
                           value={formData.lunch.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          error={fieldErrors['lunch.startTime']}
                         />
                       </div>
                       <div>
                         <label htmlFor="lunch.endTime" className="block text-sm font-medium text-gray-700">
                           End Time
                         </label>
-                        <input
-                          type="time"
+                        <TimePicker
                           name="lunch.endTime"
                           id="lunch.endTime"
                           value={formData.lunch.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          error={fieldErrors['lunch.endTime']}
                         />
                       </div>
                     </div>
@@ -883,26 +1060,26 @@ const EditRestaurant = () => {
                         <label htmlFor="dinner.startTime" className="block text-sm font-medium text-gray-700">
                           Start Time
                         </label>
-                        <input
-                          type="time"
+                        <TimePicker
                           name="dinner.startTime"
                           id="dinner.startTime"
                           value={formData.dinner.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          error={fieldErrors['dinner.startTime']}
                         />
                       </div>
                       <div>
                         <label htmlFor="dinner.endTime" className="block text-sm font-medium text-gray-700">
                           End Time
                   </label>
-                        <input
-                          type="time"
+                        <TimePicker
                           name="dinner.endTime"
                           id="dinner.endTime"
                           value={formData.dinner.endTime}
-                    onChange={handleChange}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          onChange={handleChange}
+                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          error={fieldErrors['dinner.endTime']}
                         />
                       </div>
                     </div>
@@ -924,8 +1101,13 @@ const EditRestaurant = () => {
                       id="forTwo"
                       value={formData.forTwo}
                       onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                        fieldErrors.forTwo ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {fieldErrors.forTwo && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.forTwo}</p>
+                    )}
                   </div>
 
                   <div>
@@ -961,8 +1143,13 @@ const EditRestaurant = () => {
                       id="offerPercentage"
                       value={formData.offerPercentage}
                       onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                        fieldErrors.offerPercentage ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {fieldErrors.offerPercentage && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.offerPercentage}</p>
+                    )}
                   </div>
 
                   <div>
@@ -975,8 +1162,13 @@ const EditRestaurant = () => {
                       id="couponPercentage"
                       value={formData.couponPercentage}
                       onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                        fieldErrors.couponPercentage ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {fieldErrors.couponPercentage && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.couponPercentage}</p>
+                    )}
                   </div>
                 </div>
 
@@ -993,8 +1185,13 @@ const EditRestaurant = () => {
                     min="0"
                     max="5"
                     step="0.1"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                      fieldErrors.ratting ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
+                  {fieldErrors.ratting && (
+                    <p className="mt-1 text-sm text-red-600">{fieldErrors.ratting}</p>
+                  )}
                 </div>
 
                 <div className="mt-6">
@@ -1043,11 +1240,23 @@ const EditRestaurant = () => {
                       {logoPreview && (
                         <div>
                           <p className="text-sm text-gray-600 mb-2">New Logo Preview:</p>
-                          <img
-                            src={logoPreview}
-                            alt="Logo preview"
-                            className="h-32 w-32 object-cover rounded-lg border border-gray-300"
-                          />
+                          <div className="relative inline-block">
+                            <img
+                              src={logoPreview}
+                              alt="Logo preview"
+                              className="h-32 w-32 object-cover rounded-lg border border-gray-300"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleRemoveLogo}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                              title="Remove logo"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1088,12 +1297,23 @@ const EditRestaurant = () => {
                             <p className="text-sm text-gray-600 mb-2">New Detail Images Preview ({detailPreviews.length}):</p>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               {detailPreviews.map((preview, index) => (
-                                <img
-                                  key={index}
-                                  src={preview}
-                                  alt={`Detail preview ${index + 1}`}
-                                  className="h-24 w-24 object-cover rounded-lg border border-gray-300"
-                                />
+                                <div key={index} className="relative inline-block">
+                                  <img
+                                    src={preview}
+                                    alt={`Detail preview ${index + 1}`}
+                                    className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveDetailImage(index)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    title="Remove image"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -1137,12 +1357,23 @@ const EditRestaurant = () => {
                             <p className="text-sm text-gray-600 mb-2">New Food Menu Images Preview ({foodMenuPreviews.length}):</p>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               {foodMenuPreviews.map((preview, index) => (
-                                <img
-                                  key={index}
-                                  src={preview}
-                                  alt={`Food menu preview ${index + 1}`}
-                                  className="h-24 w-24 object-cover rounded-lg border border-gray-300"
-                                />
+                                <div key={index} className="relative inline-block">
+                                  <img
+                                    src={preview}
+                                    alt={`Food menu preview ${index + 1}`}
+                                    className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveFoodMenuImage(index)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    title="Remove image"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -1186,12 +1417,23 @@ const EditRestaurant = () => {
                             <p className="text-sm text-gray-600 mb-2">New Beverages Menu Images Preview ({beveragesMenuPreviews.length}):</p>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               {beveragesMenuPreviews.map((preview, index) => (
-                                <img
-                                  key={index}
-                                  src={preview}
-                                  alt={`Beverages menu preview ${index + 1}`}
-                                  className="h-24 w-24 object-cover rounded-lg border border-gray-300"
-                                />
+                                <div key={index} className="relative inline-block">
+                                  <img
+                                    src={preview}
+                                    alt={`Beverages menu preview ${index + 1}`}
+                                    className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveBeveragesMenuImage(index)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    title="Remove image"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -1220,6 +1462,7 @@ const EditRestaurant = () => {
               </div>
             </form>
           </div>
+        </div>
         </div>
       </div>
     </div>

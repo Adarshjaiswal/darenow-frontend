@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import Sidebar from '../components/Sidebar';
 
 const UpdatePassword = () => {
   const navigate = useNavigate();
@@ -86,7 +87,9 @@ const UpdatePassword = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
+      <Sidebar />
+      <div className="ml-64">
+        <div className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Update Password</h1>
@@ -177,6 +180,7 @@ const UpdatePassword = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

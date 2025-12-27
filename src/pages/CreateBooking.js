@@ -9,8 +9,6 @@ const CreateBooking = () => {
     mealType: '',
     slotTime: '',
     guestCount: 2,
-    bookedFrom: 'DARENOW',
-    userId: 1,
   });
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -116,7 +114,7 @@ const CreateBooking = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'guestCount' || name === 'userId' ? parseInt(value) || 0 : value,
+      [name]: name === 'guestCount' ? parseInt(value) || 0 : value,
     });
   };
 
@@ -150,8 +148,7 @@ const CreateBooking = () => {
         slotTime: formData.slotTime,
         mealType: formData.mealType,
         guestCount: parseInt(formData.guestCount) || 2,
-        bookedFrom: formData.bookedFrom,
-        userId: parseInt(formData.userId) || 1,
+        bookedFrom: 'DARENOW',
       };
 
       await api.post('/table-booking', payload);
@@ -277,51 +274,18 @@ const CreateBooking = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="guestCount" className="block text-sm font-medium text-gray-700">
-                    Guest Count *
-                  </label>
-                  <input
-                    type="number"
-                    name="guestCount"
-                    id="guestCount"
-                    required
-                    min="1"
-                    value={formData.guestCount}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="userId" className="block text-sm font-medium text-gray-700">
-                    User ID *
-                  </label>
-                  <input
-                    type="number"
-                    name="userId"
-                    id="userId"
-                    required
-                    min="1"
-                    value={formData.userId}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label htmlFor="bookedFrom" className="block text-sm font-medium text-gray-700">
-                  Booked From
+                <label htmlFor="guestCount" className="block text-sm font-medium text-gray-700">
+                  Guest Count *
                 </label>
                 <input
-                  type="text"
-                  name="bookedFrom"
-                  id="bookedFrom"
-                  value={formData.bookedFrom}
+                  type="number"
+                  name="guestCount"
+                  id="guestCount"
+                  required
+                  min="1"
+                  value={formData.guestCount}
                   onChange={handleChange}
-                  placeholder="e.g., DARENOW"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
+import ConfirmationModal from '../components/ConfirmationModal';
+import Sidebar from '../components/Sidebar';
 
 const RestaurantList = () => {
   const [restaurants, setRestaurants] = useState([]);
@@ -11,6 +13,7 @@ const RestaurantList = () => {
   const [pageNo, setPageNo] = useState(1);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, restaurantId: null });
 
   const fetchRestaurants = useCallback(async (search = '', page = 1) => {
     try {
@@ -48,14 +51,20 @@ const RestaurantList = () => {
     fetchRestaurants('', 1);
   }, []); // Only run on mount
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this restaurant?')) {
+  const handleDelete = (id) => {
+    setDeleteModal({ isOpen: true, restaurantId: id });
+  };
+
+  const confirmDelete = async () => {
+    if (deleteModal.restaurantId) {
       try {
-        await api.delete(`/place/${id}`);
+        await api.delete(`/place/${deleteModal.restaurantId}`);
+        setDeleteModal({ isOpen: false, restaurantId: null });
         fetchRestaurants(currentSearch, pageNo);
       } catch (error) {
         setError(error.response?.data?.message || error.message || 'Failed to delete restaurant');
         console.error('Error deleting restaurant:', error);
+        setDeleteModal({ isOpen: false, restaurantId: null });
       }
     }
   };
@@ -65,6 +74,13 @@ const RestaurantList = () => {
     setCurrentSearch(searchTerm);
     setPageNo(1); // Reset to first page when searching
     fetchRestaurants(searchTerm, 1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setCurrentSearch('');
+    setPageNo(1);
+    fetchRestaurants('', 1);
   };
 
   const handlePageChange = (newPage) => {
@@ -84,7 +100,9 @@ const RestaurantList = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <Sidebar />
+      <div className="ml-64">
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-8">
             <div className="flex justify-between items-center">
@@ -106,6 +124,25 @@ const RestaurantList = () => {
 
           {/* Search */}
           <div className="bg-white shadow rounded-lg p-6 mb-6">
+            {currentSearch && (
+              <div className="mb-4 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-md px-4 py-2">
+                <div className="flex items-center gap-2">
+                  <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <span className="text-sm text-blue-800">
+                    <span className="font-medium">Active search:</span> "{currentSearch}"
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium underline"
+                >
+                  Clear search
+                </button>
+              </div>
+            )}
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <input
@@ -113,15 +150,28 @@ const RestaurantList = () => {
                   placeholder="Search restaurants..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    currentSearch ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                  }`}
                 />
               </div>
-              <button
-                type="submit"
-                className="bg-[#EB422B] text-white px-4 py-2 rounded-md hover:bg-[#EB422B] transition-colors"
-              >
-                Search
-              </button>
+              <div className="flex gap-2">
+                {currentSearch && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="bg-[#EB422B] text-white px-4 py-2 rounded-md hover:bg-[#EB422B] transition-colors"
+                >
+                  Search
+                </button>
+              </div>
             </form>
           </div>
 
@@ -306,6 +356,18 @@ const RestaurantList = () => {
           )}
 
         </div>
+      </div>
+
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, restaurantId: null })}
+        onConfirm={confirmDelete}
+        title="Delete Restaurant"
+        message="Are you sure you want to delete this restaurant? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="warning"
+      />
       </div>
     </div>
   );

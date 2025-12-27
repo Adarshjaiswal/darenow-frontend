@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import ConfirmationModal from '../components/ConfirmationModal';
+import Sidebar from '../components/Sidebar';
 
 const RestaurantDetails = () => {
   const { id } = useParams();
@@ -8,6 +10,7 @@ const RestaurantDetails = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteModal, setDeleteModal] = useState(false);
 
   const fetchRestaurant = useCallback(async () => {
     try {
@@ -26,15 +29,19 @@ const RestaurantDetails = () => {
     fetchRestaurant();
   }, [fetchRestaurant]);
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this restaurant?')) {
-      try {
-        await api.delete(`/place/${id}`);
-        navigate('/restaurants');
-      } catch (error) {
-        setError(error.response?.data?.message || error.message || 'Failed to delete restaurant');
-        console.error('Error deleting restaurant:', error);
-      }
+  const handleDelete = () => {
+    setDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await api.delete(`/place/${id}`);
+      setDeleteModal(false);
+      navigate('/restaurants');
+    } catch (error) {
+      setError(error.response?.data?.message || error.message || 'Failed to delete restaurant');
+      console.error('Error deleting restaurant:', error);
+      setDeleteModal(false);
     }
   };
 
@@ -49,17 +56,20 @@ const RestaurantDetails = () => {
   if (error && !restaurant) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
+        <Sidebar />
+        <div className="ml-64">
+          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div className="px-4 py-6 sm:px-0">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+              <Link
+                to="/restaurants"
+                className="text-blue-600 hover:text-blue-900"
+              >
+                ← Back to Restaurants
+              </Link>
             </div>
-            <Link
-              to="/restaurants"
-              className="text-blue-600 hover:text-blue-900"
-            >
-              ← Back to Restaurants
-            </Link>
           </div>
         </div>
       </div>
@@ -69,15 +79,18 @@ const RestaurantDetails = () => {
   if (!restaurant) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <p className="text-gray-500 text-lg">Restaurant not found.</p>
-            <Link
-              to="/restaurants"
-              className="text-blue-600 hover:text-blue-900"
-            >
-              ← Back to Restaurants
-            </Link>
+        <Sidebar />
+        <div className="ml-64">
+          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div className="px-4 py-6 sm:px-0">
+              <p className="text-gray-500 text-lg">Restaurant not found.</p>
+              <Link
+                to="/restaurants"
+                className="text-blue-600 hover:text-blue-900"
+              >
+                ← Back to Restaurants
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -86,8 +99,10 @@ const RestaurantDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <Sidebar />
+      <div className="ml-64">
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               {error}
@@ -155,7 +170,23 @@ const RestaurantDetails = () => {
 
               {/* Location */}
               <div className="mb-8 border-t border-gray-200 pt-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Location</h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900">Location</h2>
+                  {restaurant.latitude && restaurant.longitude && (
+                    <a
+                      href={`https://www.google.com/maps?q=${restaurant.latitude},${restaurant.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-4 py-2 bg-[#EB422B] text-white text-sm font-medium rounded-md hover:bg-[#EB422B] transition-colors"
+                    >
+                      <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      View on Map
+                    </a>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-500">Latitude</label>
@@ -196,7 +227,7 @@ const RestaurantDetails = () => {
                             {restaurant.breakfast.startTime} - {restaurant.breakfast.endTime}
                           </p>
                         ) : (
-                          <p className="mt-1 text-sm text-gray-500">Not Available</p>
+                          <p className="mt-1 text-sm text-gray-500">Not Serviceable</p>
                         )}
                       </div>
                     )}
@@ -208,7 +239,7 @@ const RestaurantDetails = () => {
                             {restaurant.lunch.startTime} - {restaurant.lunch.endTime}
                           </p>
                         ) : (
-                          <p className="mt-1 text-sm text-gray-500">Not Available</p>
+                          <p className="mt-1 text-sm text-gray-500">Not Serviceable</p>
                         )}
                       </div>
                     )}
@@ -220,7 +251,7 @@ const RestaurantDetails = () => {
                             {restaurant.dinner.startTime} - {restaurant.dinner.endTime}
                           </p>
                         ) : (
-                          <p className="mt-1 text-sm text-gray-500">Not Available</p>
+                          <p className="mt-1 text-sm text-gray-500">Not Serviceable</p>
                         )}
                       </div>
                     )}
@@ -266,6 +297,18 @@ const RestaurantDetails = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={deleteModal}
+        onClose={() => setDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Restaurant"
+        message="Are you sure you want to delete this restaurant? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="warning"
+      />
+        </div>
     </div>
   );
 };

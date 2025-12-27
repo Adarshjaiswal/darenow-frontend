@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ConfirmationModal from './ConfirmationModal';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -9,6 +10,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [restaurant, setRestaurant] = useState(null);
   const [isRestaurantLoggedIn, setIsRestaurantLoggedIn] = useState(false);
+  const [logoutModal, setLogoutModal] = useState({ isOpen: false, type: 'admin' }); // 'admin' or 'restaurant'
 
   useEffect(() => {
     // Check if restaurant is logged in
@@ -57,37 +59,45 @@ const Navbar = () => {
   }, [location.pathname]); // Re-check when route changes
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    setLogoutModal({ isOpen: true, type: 'admin' });
   };
 
   const handleRestaurantLogout = () => {
-    localStorage.removeItem('restaurantToken');
-    localStorage.removeItem('restaurant');
-    setRestaurant(null);
-    setIsRestaurantLoggedIn(false);
-    // Trigger a custom event to update navbar in other components if needed
-    window.dispatchEvent(new Event('restaurantLogout'));
-    navigate('/restaurant/login');
+    setLogoutModal({ isOpen: true, type: 'restaurant' });
+  };
+
+  const confirmLogout = () => {
+    if (logoutModal.type === 'restaurant') {
+      localStorage.removeItem('restaurantToken');
+      localStorage.removeItem('restaurant');
+      setRestaurant(null);
+      setIsRestaurantLoggedIn(false);
+      // Trigger a custom event to update navbar in other components if needed
+      window.dispatchEvent(new Event('restaurantLogout'));
+      setLogoutModal({ isOpen: false, type: 'restaurant' });
+      navigate('/restaurant/login');
+    } else {
+      logout();
+      setLogoutModal({ isOpen: false, type: 'admin' });
+      navigate('/');
+    }
   };
 
   return (
-    <nav className="bg-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50">
+      <div className="w-full">
         <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold text-blue-600">DareNow</span>
+          <div className="flex items-center pl-4">
+            <Link to="/login" className="flex-shrink-0 flex items-center">
+              <img 
+                src="/darenow-logo.png" 
+                alt="DareNow Logo" 
+                className="h-10 w-auto"
+              />
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/"
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Home
-            </Link>
+          <div className="hidden md:flex items-center space-x-4 pr-4">
             {isRestaurantLoggedIn ? (
               <>
                 <Link
@@ -113,35 +123,9 @@ const Navbar = () => {
                 </div>
               </>
             ) : isAuthenticated ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/restaurants"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Restaurants
-                </Link>
-                <div className="flex items-center space-x-4">
-                  <span className="text-gray-700 text-sm">Welcome, {user?.name}</span>
-                  <Link
-                    to="/update-password"
-                    className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Update Password
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </>
+              <div className="flex items-center pr-4">
+                <span className="text-gray-700 text-sm">Welcome, {user?.name || 'User'}</span>
+              </div>
             ) : (
               <>
                 <Link
@@ -167,7 +151,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center pr-4">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600"
@@ -183,13 +167,6 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link
-                to="/"
-                className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
               {isRestaurantLoggedIn ? (
                 <>
                   <Link
@@ -220,41 +197,7 @@ const Navbar = () => {
                   </button>
                 </>
               ) : isAuthenticated ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to="/restaurants"
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Restaurants
-                  </Link>
-                  <div className="px-3 py-2">
-                    <span className="text-gray-700 text-sm">Welcome, {user?.name}</span>
-                  </div>
-                  <Link
-                    to="/update-password"
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Update Password
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="bg-red-600 text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-red-700"
-                  >
-                    Logout
-                  </button>
-                </>
+                null
               ) : (
                 <>
                   <Link
@@ -284,6 +227,18 @@ const Navbar = () => {
           </div>
         )}
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={logoutModal.isOpen}
+        onClose={() => setLogoutModal({ isOpen: false, type: logoutModal.type })}
+        onConfirm={confirmLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to logout? You will need to login again to access your account."
+        confirmText="Yes, Logout"
+        cancelText="Cancel"
+        type="info"
+      />
     </nav>
   );
 };
