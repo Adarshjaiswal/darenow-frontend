@@ -531,6 +531,9 @@ const CreateRestaurant = () => {
   };
 
   const handleImageChange = (type, files) => {
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB in bytes
+    const MAX_IMAGES = 10;
+
     // Clear image errors when files are selected
     if (type === 'logo' && files[0]) {
       setFieldErrors(prev => {
@@ -560,6 +563,16 @@ const CreateRestaurant = () => {
 
     if (type === 'logo') {
       const file = files[0] || null;
+      
+      // Validate file size
+      if (file && file.size > MAX_FILE_SIZE) {
+        setFieldErrors(prev => ({
+          ...prev,
+          logoImage: 'Image size must be less than 2 MB'
+        }));
+        return;
+      }
+      
       setLogoImage(file);
       if (file) {
         const reader = new FileReader();
@@ -572,6 +585,26 @@ const CreateRestaurant = () => {
       }
     } else if (type === 'detail') {
       const fileArray = Array.from(files);
+      
+      // Validate total count (max 10 images)
+      if (fileArray.length > MAX_IMAGES) {
+        setFieldErrors(prev => ({
+          ...prev,
+          detailImages: `Maximum ${MAX_IMAGES} images allowed. You selected ${fileArray.length} images.`
+        }));
+        return;
+      }
+      
+      // Validate each file size
+      const oversizedFiles = fileArray.filter(file => file.size > MAX_FILE_SIZE);
+      if (oversizedFiles.length > 0) {
+        setFieldErrors(prev => ({
+          ...prev,
+          detailImages: `Some images exceed 2 MB limit. Please select smaller images.`
+        }));
+        return;
+      }
+      
       setDetailImages(fileArray);
       const previews = [];
       fileArray.forEach((file) => {
@@ -589,6 +622,26 @@ const CreateRestaurant = () => {
       }
     } else if (type === 'foodMenu') {
       const fileArray = Array.from(files);
+      
+      // Validate total count (max 10 images)
+      if (fileArray.length > MAX_IMAGES) {
+        setFieldErrors(prev => ({
+          ...prev,
+          foodMenuImages: `Maximum ${MAX_IMAGES} images allowed. You selected ${fileArray.length} images.`
+        }));
+        return;
+      }
+      
+      // Validate each file size
+      const oversizedFiles = fileArray.filter(file => file.size > MAX_FILE_SIZE);
+      if (oversizedFiles.length > 0) {
+        setFieldErrors(prev => ({
+          ...prev,
+          foodMenuImages: `Some images exceed 2 MB limit. Please select smaller images.`
+        }));
+        return;
+      }
+      
       setFoodMenuImages(fileArray);
       const previews = [];
       fileArray.forEach((file) => {
@@ -606,6 +659,26 @@ const CreateRestaurant = () => {
       }
     } else if (type === 'beveragesMenu') {
       const fileArray = Array.from(files);
+      
+      // Validate total count (max 10 images)
+      if (fileArray.length > MAX_IMAGES) {
+        setFieldErrors(prev => ({
+          ...prev,
+          beveragesMenuImages: `Maximum ${MAX_IMAGES} images allowed. You selected ${fileArray.length} images.`
+        }));
+        return;
+      }
+      
+      // Validate each file size
+      const oversizedFiles = fileArray.filter(file => file.size > MAX_FILE_SIZE);
+      if (oversizedFiles.length > 0) {
+        setFieldErrors(prev => ({
+          ...prev,
+          beveragesMenuImages: `Some images exceed 2 MB limit. Please select smaller images.`
+        }));
+        return;
+      }
+      
       setBeveragesMenuImages(fileArray);
       const previews = [];
       fileArray.forEach((file) => {
@@ -826,7 +899,7 @@ const CreateRestaurant = () => {
                     value={formData.name}
                     onChange={handleChange}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.name ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.name ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                   />
                     {fieldErrors.name && (
@@ -844,7 +917,7 @@ const CreateRestaurant = () => {
                   value={formData.description}
                   onChange={handleChange}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.description ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.description ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                 />
                     {fieldErrors.description && (
@@ -866,7 +939,7 @@ const CreateRestaurant = () => {
                     value={formData.email}
                     onChange={handleChange}
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.email ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.email && (
@@ -903,7 +976,7 @@ const CreateRestaurant = () => {
                     }}
                     placeholder="10 digit mobile number"
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.mobileNumber ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.mobileNumber && (
@@ -923,7 +996,7 @@ const CreateRestaurant = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.password ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.password ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.password && (
@@ -947,7 +1020,7 @@ const CreateRestaurant = () => {
                     value={formData.address}
                     onChange={handleChange}
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.address ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.address ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.address && (
@@ -969,7 +1042,7 @@ const CreateRestaurant = () => {
                       placeholder="e.g., 19.305808"
                       pattern={LAT_REGEX.source}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.latitude ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.latitude ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                   />
                     {fieldErrors.latitude && (
@@ -990,7 +1063,7 @@ const CreateRestaurant = () => {
                       placeholder="e.g., 73.063109"
                       pattern={LONG_REGEX.source}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.longitude ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.longitude ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                   />
                     {fieldErrors.longitude && (
@@ -1014,7 +1087,7 @@ const CreateRestaurant = () => {
                     id="openingTime"
                     value={formData.openingTime}
                     onChange={handleChange}
-                    className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     error={fieldErrors.openingTime}
                   />
                 </div>
@@ -1028,7 +1101,7 @@ const CreateRestaurant = () => {
                     id="closingTime"
                     value={formData.closingTime}
                     onChange={handleChange}
-                    className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     error={fieldErrors.closingTime}
                   />
                 </div>
@@ -1048,7 +1121,7 @@ const CreateRestaurant = () => {
                       id="breakfast.available"
                       checked={formData.breakfast.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
                     />
                     <label htmlFor="breakfast.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Breakfast Available
@@ -1065,7 +1138,7 @@ const CreateRestaurant = () => {
                           id="breakfast.startTime"
                           value={formData.breakfast.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['breakfast.startTime']}
                         />
                       </div>
@@ -1078,7 +1151,7 @@ const CreateRestaurant = () => {
                           id="breakfast.endTime"
                           value={formData.breakfast.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['breakfast.endTime']}
                         />
                       </div>
@@ -1095,7 +1168,7 @@ const CreateRestaurant = () => {
                       id="lunch.available"
                       checked={formData.lunch.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
                     />
                     <label htmlFor="lunch.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Lunch Available
@@ -1112,7 +1185,7 @@ const CreateRestaurant = () => {
                           id="lunch.startTime"
                           value={formData.lunch.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['lunch.startTime']}
                         />
                       </div>
@@ -1125,7 +1198,7 @@ const CreateRestaurant = () => {
                           id="lunch.endTime"
                           value={formData.lunch.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['lunch.endTime']}
                         />
                       </div>
@@ -1142,7 +1215,7 @@ const CreateRestaurant = () => {
                       id="dinner.available"
                       checked={formData.dinner.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
                     />
                     <label htmlFor="dinner.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Dinner Available
@@ -1159,7 +1232,7 @@ const CreateRestaurant = () => {
                           id="dinner.startTime"
                           value={formData.dinner.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['dinner.startTime']}
                         />
                       </div>
@@ -1172,7 +1245,7 @@ const CreateRestaurant = () => {
                           id="dinner.endTime"
                           value={formData.dinner.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['dinner.endTime']}
                         />
                       </div>
@@ -1200,7 +1273,7 @@ const CreateRestaurant = () => {
                     max="99999"
                       placeholder="e.g., 1000"
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.forTwo ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.forTwo ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.forTwo && (
@@ -1218,7 +1291,7 @@ const CreateRestaurant = () => {
                     value={formData.interestId}
                     onChange={handleChange}
                     disabled={loadingInterests}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value="0">Select an interest</option>
                     {interests.map((interest) => (
@@ -1246,7 +1319,7 @@ const CreateRestaurant = () => {
                     max="100"
                       placeholder="e.g., 10"
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.offerPercentage ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.offerPercentage ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.offerPercentage && (
@@ -1269,7 +1342,7 @@ const CreateRestaurant = () => {
                     max="100"
                       placeholder="e.g., 10"
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.couponPercentage ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.couponPercentage ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.couponPercentage && (
@@ -1293,7 +1366,7 @@ const CreateRestaurant = () => {
                   step="0.1"
                   placeholder="0.0"
                   className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                    fieldErrors.ratting ? 'border-red-500' : 'border-gray-300'
+                    fieldErrors.ratting ? 'border-red-500' : 'border-[#ea432b]'
                   }`}
                 />
                 {fieldErrors.ratting && (
@@ -1313,7 +1386,7 @@ const CreateRestaurant = () => {
                     onChange={handleChange}
                     placeholder="e.g., My Booking Terms"
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.tableBookingTerms ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.tableBookingTerms ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.tableBookingTerms && (
@@ -1330,6 +1403,7 @@ const CreateRestaurant = () => {
                   <div>
                     <label htmlFor="logoImage" className="block text-sm font-medium text-gray-700 mb-2">
                       Logo Image *
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 2 MB)</span>
                     </label>
                     <input
                       type="file"
@@ -1349,7 +1423,7 @@ const CreateRestaurant = () => {
                         <img
                           src={logoPreview}
                           alt="Logo preview"
-                          className="h-32 w-32 object-cover rounded-lg border border-gray-300"
+                          className="h-32 w-32 object-cover rounded-lg border border-[#ea432b]"
                         />
                           <button
                             type="button"
@@ -1369,6 +1443,7 @@ const CreateRestaurant = () => {
                   <div>
                     <label htmlFor="detailImages" className="block text-sm font-medium text-gray-700 mb-2">
                       Detail Images (Multiple) *
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 10 images, 2 MB each)</span>
                     </label>
                     <input
                       type="file"
@@ -1391,7 +1466,7 @@ const CreateRestaurant = () => {
                             <img
                               src={preview}
                               alt={`Detail preview ${index + 1}`}
-                              className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                              className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                             />
                               <button
                                 type="button"
@@ -1413,6 +1488,7 @@ const CreateRestaurant = () => {
                   <div>
                     <label htmlFor="foodMenuImages" className="block text-sm font-medium text-gray-700 mb-2">
                       Food Menu Images (Multiple) *
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 10 images, 2 MB each)</span>
                     </label>
                     <input
                       type="file"
@@ -1435,7 +1511,7 @@ const CreateRestaurant = () => {
                             <img
                               src={preview}
                               alt={`Food menu preview ${index + 1}`}
-                              className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                              className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                             />
                               <button
                                 type="button"
@@ -1457,6 +1533,7 @@ const CreateRestaurant = () => {
                   <div>
                     <label htmlFor="beveragesMenuImages" className="block text-sm font-medium text-gray-700 mb-2">
                       Beverages Menu Images (Multiple) *
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 10 images, 2 MB each)</span>
                     </label>
                     <input
                       type="file"
@@ -1479,7 +1556,7 @@ const CreateRestaurant = () => {
                             <img
                               src={preview}
                               alt={`Beverages menu preview ${index + 1}`}
-                              className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                              className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                             />
                               <button
                                 type="button"

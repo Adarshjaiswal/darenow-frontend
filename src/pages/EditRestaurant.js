@@ -520,8 +520,21 @@ const EditRestaurant = () => {
   };
 
   const handleImageChange = (type, files) => {
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB in bytes
+    const MAX_IMAGES = 10;
+
     if (type === 'logo') {
       const file = files[0] || null;
+      
+      // Validate file size
+      if (file && file.size > MAX_FILE_SIZE) {
+        setFieldErrors(prev => ({
+          ...prev,
+          logoImage: 'Image size must be less than 2 MB'
+        }));
+        return;
+      }
+      
       setLogoImage(file);
       if (file) {
         const reader = new FileReader();
@@ -534,6 +547,27 @@ const EditRestaurant = () => {
       }
     } else if (type === 'detail') {
       const fileArray = Array.from(files);
+      const totalImages = existingDetailImages.length + fileArray.length;
+      
+      // Validate total count (existing + new should not exceed 10)
+      if (totalImages > MAX_IMAGES) {
+        setFieldErrors(prev => ({
+          ...prev,
+          detailImages: `Maximum ${MAX_IMAGES} images allowed. You have ${existingDetailImages.length} existing images and selected ${fileArray.length} new images.`
+        }));
+        return;
+      }
+      
+      // Validate each file size
+      const oversizedFiles = fileArray.filter(file => file.size > MAX_FILE_SIZE);
+      if (oversizedFiles.length > 0) {
+        setFieldErrors(prev => ({
+          ...prev,
+          detailImages: `Some images exceed 2 MB limit. Please select smaller images.`
+        }));
+        return;
+      }
+      
       setDetailImages(fileArray);
       const previews = [];
       fileArray.forEach((file) => {
@@ -551,6 +585,27 @@ const EditRestaurant = () => {
       }
     } else if (type === 'foodMenu') {
       const fileArray = Array.from(files);
+      const totalImages = existingFoodMenuImages.length + fileArray.length;
+      
+      // Validate total count (existing + new should not exceed 10)
+      if (totalImages > MAX_IMAGES) {
+        setFieldErrors(prev => ({
+          ...prev,
+          foodMenuImages: `Maximum ${MAX_IMAGES} images allowed. You have ${existingFoodMenuImages.length} existing images and selected ${fileArray.length} new images.`
+        }));
+        return;
+      }
+      
+      // Validate each file size
+      const oversizedFiles = fileArray.filter(file => file.size > MAX_FILE_SIZE);
+      if (oversizedFiles.length > 0) {
+        setFieldErrors(prev => ({
+          ...prev,
+          foodMenuImages: `Some images exceed 2 MB limit. Please select smaller images.`
+        }));
+        return;
+      }
+      
       setFoodMenuImages(fileArray);
       const previews = [];
       fileArray.forEach((file) => {
@@ -568,6 +623,27 @@ const EditRestaurant = () => {
       }
     } else if (type === 'beveragesMenu') {
       const fileArray = Array.from(files);
+      const totalImages = existingBeveragesMenuImages.length + fileArray.length;
+      
+      // Validate total count (existing + new should not exceed 10)
+      if (totalImages > MAX_IMAGES) {
+        setFieldErrors(prev => ({
+          ...prev,
+          beveragesMenuImages: `Maximum ${MAX_IMAGES} images allowed. You have ${existingBeveragesMenuImages.length} existing images and selected ${fileArray.length} new images.`
+        }));
+        return;
+      }
+      
+      // Validate each file size
+      const oversizedFiles = fileArray.filter(file => file.size > MAX_FILE_SIZE);
+      if (oversizedFiles.length > 0) {
+        setFieldErrors(prev => ({
+          ...prev,
+          beveragesMenuImages: `Some images exceed 2 MB limit. Please select smaller images.`
+        }));
+        return;
+      }
+      
       setBeveragesMenuImages(fileArray);
       const previews = [];
       fileArray.forEach((file) => {
@@ -813,7 +889,7 @@ const EditRestaurant = () => {
                     id="name"
                     value={formData.name}
                     onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
               </div>
@@ -828,7 +904,7 @@ const EditRestaurant = () => {
                   rows={4}
                   value={formData.description}
                   onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
 
@@ -845,7 +921,7 @@ const EditRestaurant = () => {
                       value={formData.email}
                       onChange={handleChange}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.email ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                     />
                     {fieldErrors.email && (
@@ -882,7 +958,7 @@ const EditRestaurant = () => {
                       }}
                       placeholder="10 digit mobile number"
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.mobileNumber ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                     />
                     {fieldErrors.mobileNumber && (
@@ -902,7 +978,7 @@ const EditRestaurant = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter new password"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Only enter a password if you want to change it
@@ -924,7 +1000,7 @@ const EditRestaurant = () => {
                       id="address"
                       value={formData.address}
                     onChange={handleChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
 
@@ -942,7 +1018,7 @@ const EditRestaurant = () => {
                         placeholder="e.g., 19.305808"
                         pattern={LAT_REGEX.source}
                         className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                          fieldErrors.latitude ? 'border-red-500' : 'border-gray-300'
+                          fieldErrors.latitude ? 'border-red-500' : 'border-[#ea432b]'
                         }`}
                     />
                     {fieldErrors.latitude && (
@@ -963,7 +1039,7 @@ const EditRestaurant = () => {
                         placeholder="e.g., 73.063109"
                         pattern={LONG_REGEX.source}
                         className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                          fieldErrors.longitude ? 'border-red-500' : 'border-gray-300'
+                          fieldErrors.longitude ? 'border-red-500' : 'border-[#ea432b]'
                         }`}
                       />
                       {fieldErrors.longitude && (
@@ -987,7 +1063,7 @@ const EditRestaurant = () => {
                       id="openingTime"
                       value={formData.openingTime}
                       onChange={handleChange}
-                      className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       error={fieldErrors.openingTime}
                     />
                   </div>
@@ -1001,7 +1077,7 @@ const EditRestaurant = () => {
                       id="closingTime"
                       value={formData.closingTime}
                       onChange={handleChange}
-                      className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       error={fieldErrors.closingTime}
                     />
                   </div>
@@ -1021,7 +1097,7 @@ const EditRestaurant = () => {
                       id="breakfast.available"
                       checked={formData.breakfast.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
                     />
                     <label htmlFor="breakfast.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Breakfast Available
@@ -1038,7 +1114,7 @@ const EditRestaurant = () => {
                           id="breakfast.startTime"
                           value={formData.breakfast.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['breakfast.startTime']}
                         />
                       </div>
@@ -1051,7 +1127,7 @@ const EditRestaurant = () => {
                           id="breakfast.endTime"
                           value={formData.breakfast.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['breakfast.endTime']}
                         />
                       </div>
@@ -1068,7 +1144,7 @@ const EditRestaurant = () => {
                       id="lunch.available"
                       checked={formData.lunch.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
                     />
                     <label htmlFor="lunch.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Lunch Available
@@ -1085,7 +1161,7 @@ const EditRestaurant = () => {
                           id="lunch.startTime"
                           value={formData.lunch.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['lunch.startTime']}
                         />
                       </div>
@@ -1098,7 +1174,7 @@ const EditRestaurant = () => {
                           id="lunch.endTime"
                           value={formData.lunch.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['lunch.endTime']}
                         />
                       </div>
@@ -1115,7 +1191,7 @@ const EditRestaurant = () => {
                       id="dinner.available"
                       checked={formData.dinner.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
                     />
                     <label htmlFor="dinner.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Dinner Available
@@ -1132,7 +1208,7 @@ const EditRestaurant = () => {
                           id="dinner.startTime"
                           value={formData.dinner.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['dinner.startTime']}
                         />
                       </div>
@@ -1145,7 +1221,7 @@ const EditRestaurant = () => {
                           id="dinner.endTime"
                           value={formData.dinner.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           error={fieldErrors['dinner.endTime']}
                         />
                       </div>
@@ -1169,7 +1245,7 @@ const EditRestaurant = () => {
                       value={formData.forTwo}
                       onChange={handleChange}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.forTwo ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.forTwo ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                     />
                     {fieldErrors.forTwo && (
@@ -1187,7 +1263,7 @@ const EditRestaurant = () => {
                       value={formData.interestId}
                       onChange={handleChange}
                       disabled={loadingInterests}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <option value="0">Select an interest</option>
                       {interests.map((interest) => (
@@ -1211,7 +1287,7 @@ const EditRestaurant = () => {
                       value={formData.offerPercentage}
                       onChange={handleChange}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.offerPercentage ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.offerPercentage ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                     />
                     {fieldErrors.offerPercentage && (
@@ -1230,7 +1306,7 @@ const EditRestaurant = () => {
                       value={formData.couponPercentage}
                       onChange={handleChange}
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.couponPercentage ? 'border-red-500' : 'border-gray-300'
+                        fieldErrors.couponPercentage ? 'border-red-500' : 'border-[#ea432b]'
                       }`}
                     />
                     {fieldErrors.couponPercentage && (
@@ -1253,7 +1329,7 @@ const EditRestaurant = () => {
                     max="5"
                     step="0.1"
                     className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.ratting ? 'border-red-500' : 'border-gray-300'
+                      fieldErrors.ratting ? 'border-red-500' : 'border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.ratting && (
@@ -1271,7 +1347,7 @@ const EditRestaurant = () => {
                     rows={3}
                     value={formData.tableBookingTerms}
                     onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
               </div>
@@ -1284,6 +1360,7 @@ const EditRestaurant = () => {
                 <div>
                     <label htmlFor="logoImage" className="block text-sm font-medium text-gray-700 mb-2">
                       Logo Image
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 2 MB)</span>
                   </label>
                     <input
                       type="file"
@@ -1300,7 +1377,7 @@ const EditRestaurant = () => {
                           <img
                             src={existingLogo}
                             alt="Current logo"
-                            className="h-32 w-32 object-cover rounded-lg border border-gray-300"
+                            className="h-32 w-32 object-cover rounded-lg border border-[#ea432b]"
                           />
                         </div>
                       )}
@@ -1311,7 +1388,7 @@ const EditRestaurant = () => {
                             <img
                               src={logoPreview}
                               alt="Logo preview"
-                              className="h-32 w-32 object-cover rounded-lg border border-gray-300"
+                              className="h-32 w-32 object-cover rounded-lg border border-[#ea432b]"
                             />
                             <button
                               type="button"
@@ -1332,6 +1409,7 @@ const EditRestaurant = () => {
                   <div>
                     <label htmlFor="detailImages" className="block text-sm font-medium text-gray-700 mb-2">
                       Detail Images (Multiple)
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 10 images total, 2 MB each)</span>
                     </label>
                     <input
                       type="file"
@@ -1353,7 +1431,7 @@ const EditRestaurant = () => {
                                   key={index}
                                   src={url}
                                   alt={`Detail ${index + 1}`}
-                                  className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                  className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                                 />
                               ))}
                             </div>
@@ -1368,7 +1446,7 @@ const EditRestaurant = () => {
                                   <img
                                     src={preview}
                                     alt={`Detail preview ${index + 1}`}
-                                    className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                    className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                                   />
                                   <button
                                     type="button"
@@ -1392,6 +1470,7 @@ const EditRestaurant = () => {
               <div>
                     <label htmlFor="foodMenuImages" className="block text-sm font-medium text-gray-700 mb-2">
                       Food Menu Images (Multiple)
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 10 images total, 2 MB each)</span>
                 </label>
                 <input
                   type="file"
@@ -1413,7 +1492,7 @@ const EditRestaurant = () => {
                                   key={index}
                                   src={url}
                                   alt={`Food menu ${index + 1}`}
-                                  className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                  className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                                 />
                               ))}
                             </div>
@@ -1428,7 +1507,7 @@ const EditRestaurant = () => {
                                   <img
                                     src={preview}
                                     alt={`Food menu preview ${index + 1}`}
-                                    className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                    className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                                   />
                                   <button
                                     type="button"
@@ -1452,6 +1531,7 @@ const EditRestaurant = () => {
               <div>
                     <label htmlFor="beveragesMenuImages" className="block text-sm font-medium text-gray-700 mb-2">
                       Beverages Menu Images (Multiple)
+                      <span className="text-xs text-gray-500 font-normal ml-2">(Max 10 images total, 2 MB each)</span>
                 </label>
                     <input
                       type="file"
@@ -1473,7 +1553,7 @@ const EditRestaurant = () => {
                                   key={index}
                                   src={url}
                                   alt={`Beverages menu ${index + 1}`}
-                                  className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                  className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                                 />
                               ))}
                             </div>
@@ -1488,7 +1568,7 @@ const EditRestaurant = () => {
                                   <img
                                     src={preview}
                                     alt={`Beverages menu preview ${index + 1}`}
-                                    className="h-24 w-24 object-cover rounded-lg border border-gray-300"
+                                    className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
                                   />
                                   <button
                                     type="button"
