@@ -436,6 +436,58 @@ const EditRestaurant = () => {
     }
   };
 
+  const handleMobileNumberChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Only allow numeric characters
+    const numericValue = value.replace(/[^0-9]/g, '');
+    
+    // If non-numeric characters were removed, show error
+    if (value !== numericValue && numericValue.length < value.length) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: 'Only numbers are allowed in mobile number'
+      }));
+    } else {
+      // Clear error if valid input
+      if (fieldErrors[name]) {
+        setFieldErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
+    }
+    
+    // Update form data with only numeric value
+    setFormData({
+      ...formData,
+      [name]: numericValue,
+    });
+  };
+
+  const handleMobileNumberKeyPress = (e) => {
+    // Allow: backspace, delete, tab, escape, enter, and numbers
+    if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+        (e.keyCode === 65 && e.ctrlKey === true) ||
+        (e.keyCode === 67 && e.ctrlKey === true) ||
+        (e.keyCode === 86 && e.ctrlKey === true) ||
+        (e.keyCode === 88 && e.ctrlKey === true) ||
+        // Allow: home, end, left, right
+        (e.keyCode >= 35 && e.keyCode <= 39)) {
+      return;
+    }
+    // Ensure that it is a number and stop the keypress
+    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+      e.preventDefault();
+      setFieldErrors(prev => ({
+        ...prev,
+        mobileNumber: 'Only numbers are allowed in mobile number'
+      }));
+    }
+  };
+
   const handleRemoveLogo = () => {
     setLogoImage(null);
     setLogoPreview(null);
@@ -809,10 +861,25 @@ const EditRestaurant = () => {
                       type="tel"
                       name="mobileNumber"
                       id="mobileNumber"
-                      pattern={PHONE_REGEX.source}
                       maxLength="10"
                       value={formData.mobileNumber}
-                      onChange={handleChange}
+                      onChange={handleMobileNumberChange}
+                      onKeyDown={handleMobileNumberKeyPress}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedText = e.clipboardData.getData('text');
+                        const numericValue = pastedText.replace(/[^0-9]/g, '');
+                        if (numericValue !== pastedText) {
+                          setFieldErrors(prev => ({
+                            ...prev,
+                            mobileNumber: 'Only numbers are allowed in mobile number'
+                          }));
+                        }
+                        setFormData({
+                          ...formData,
+                          mobileNumber: numericValue.slice(0, 10),
+                        });
+                      }}
                       placeholder="10 digit mobile number"
                       className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                         fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'
