@@ -15,8 +15,18 @@ const Login = () => {
   const from = location.state?.from?.pathname || '/dashboard';
 
   useEffect(() => {
+    // Check if admin is already logged in
     if (isAuthenticated) {
       navigate(from, { replace: true });
+      return;
+    }
+    
+    // Check if restaurant is already logged in
+    const restaurantToken = localStorage.getItem('restaurantToken');
+    const restaurant = localStorage.getItem('restaurant');
+    if (restaurantToken && restaurant) {
+      navigate('/restaurant/bookings', { replace: true });
+      return;
     }
   }, [isAuthenticated, navigate, from]);
 

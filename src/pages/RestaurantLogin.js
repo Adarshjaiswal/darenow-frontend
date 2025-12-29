@@ -17,6 +17,15 @@ const RestaurantLogin = () => {
     const restaurant = localStorage.getItem('restaurant');
     if (restaurantToken && restaurant) {
       navigate('/restaurant/bookings', { replace: true });
+      return;
+    }
+    
+    // Check if admin is already logged in
+    const adminToken = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (adminToken && user) {
+      navigate('/dashboard', { replace: true });
+      return;
     }
   }, [navigate]);
 
@@ -102,7 +111,7 @@ const RestaurantLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -159,7 +168,7 @@ const RestaurantLogin = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#EB422B] hover:bg-[#EB422B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#EB422B] hover:bg-[#EB422B] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#EB422B] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
