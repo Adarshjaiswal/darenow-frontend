@@ -584,6 +584,12 @@ const CreateRestaurant = () => {
         setLogoPreview(null);
       }
     } else if (type === 'detail') {
+      if (!files || files.length === 0) {
+        setDetailImages([]);
+        setDetailPreviews([]);
+        return;
+      }
+      
       const fileArray = Array.from(files);
       
       // Validate total count (max 10 images)
@@ -605,22 +611,64 @@ const CreateRestaurant = () => {
         return;
       }
       
+      // Set images first
       setDetailImages(fileArray);
-      const previews = [];
-      fileArray.forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          previews.push(reader.result);
-          if (previews.length === fileArray.length) {
-            setDetailPreviews([...previews]);
+      
+      // Generate previews for all files
+      const previewPromises = fileArray.map((file, index) => {
+        return new Promise((resolve) => {
+          try {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              if (reader.result) {
+                resolve({ index, preview: reader.result });
+              } else {
+                console.error('No result for file:', file.name);
+                resolve({ index, preview: null });
+              }
+            };
+            reader.onerror = (error) => {
+              console.error('Error reading file:', file.name, error);
+              resolve({ index, preview: null });
+            };
+            reader.readAsDataURL(file);
+          } catch (error) {
+            console.error('Exception reading file:', file.name, error);
+            resolve({ index, preview: null });
           }
-        };
-        reader.readAsDataURL(file);
+        });
       });
-      if (fileArray.length === 0) {
-        setDetailPreviews([]);
-      }
+      
+      Promise.all(previewPromises)
+        .then((results) => {
+          // Sort by index to maintain file order
+          results.sort((a, b) => a.index - b.index);
+          const previews = results.map(r => r.preview).filter(Boolean);
+          
+          if (previews.length !== fileArray.length) {
+            console.warn(`Generated ${previews.length} previews out of ${fileArray.length} files`);
+          }
+          
+          // Use functional update to ensure we're setting the latest state
+          setDetailPreviews(() => previews);
+          
+          if (previews.length === 0) {
+            showToast('Failed to generate previews for selected images', 'error');
+          } else if (previews.length < fileArray.length) {
+            showToast(`Generated ${previews.length} out of ${fileArray.length} previews`, 'warning');
+          }
+        })
+        .catch((error) => {
+          console.error('Error in Promise.all for detail images:', error);
+          showToast('Error generating image previews', 'error');
+        });
     } else if (type === 'foodMenu') {
+      if (!files || files.length === 0) {
+        setFoodMenuImages([]);
+        setFoodMenuPreviews([]);
+        return;
+      }
+      
       const fileArray = Array.from(files);
       
       // Validate total count (max 10 images)
@@ -642,22 +690,64 @@ const CreateRestaurant = () => {
         return;
       }
       
+      // Set images first
       setFoodMenuImages(fileArray);
-      const previews = [];
-      fileArray.forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          previews.push(reader.result);
-          if (previews.length === fileArray.length) {
-            setFoodMenuPreviews([...previews]);
+      
+      // Generate previews for all files
+      const previewPromises = fileArray.map((file, index) => {
+        return new Promise((resolve) => {
+          try {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              if (reader.result) {
+                resolve({ index, preview: reader.result });
+              } else {
+                console.error('No result for file:', file.name);
+                resolve({ index, preview: null });
+              }
+            };
+            reader.onerror = (error) => {
+              console.error('Error reading file:', file.name, error);
+              resolve({ index, preview: null });
+            };
+            reader.readAsDataURL(file);
+          } catch (error) {
+            console.error('Exception reading file:', file.name, error);
+            resolve({ index, preview: null });
           }
-        };
-        reader.readAsDataURL(file);
+        });
       });
-      if (fileArray.length === 0) {
-        setFoodMenuPreviews([]);
-      }
+      
+      Promise.all(previewPromises)
+        .then((results) => {
+          // Sort by index to maintain file order
+          results.sort((a, b) => a.index - b.index);
+          const previews = results.map(r => r.preview).filter(Boolean);
+          
+          if (previews.length !== fileArray.length) {
+            console.warn(`Generated ${previews.length} previews out of ${fileArray.length} files`);
+          }
+          
+          // Use functional update to ensure we're setting the latest state
+          setFoodMenuPreviews(() => previews);
+          
+          if (previews.length === 0) {
+            showToast('Failed to generate previews for selected images', 'error');
+          } else if (previews.length < fileArray.length) {
+            showToast(`Generated ${previews.length} out of ${fileArray.length} previews`, 'warning');
+          }
+        })
+        .catch((error) => {
+          console.error('Error in Promise.all for food menu images:', error);
+          showToast('Error generating image previews', 'error');
+        });
     } else if (type === 'beveragesMenu') {
+      if (!files || files.length === 0) {
+        setBeveragesMenuImages([]);
+        setBeveragesMenuPreviews([]);
+        return;
+      }
+      
       const fileArray = Array.from(files);
       
       // Validate total count (max 10 images)
@@ -679,21 +769,57 @@ const CreateRestaurant = () => {
         return;
       }
       
+      // Set images first
       setBeveragesMenuImages(fileArray);
-      const previews = [];
-      fileArray.forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          previews.push(reader.result);
-          if (previews.length === fileArray.length) {
-            setBeveragesMenuPreviews([...previews]);
+      
+      // Generate previews for all files
+      const previewPromises = fileArray.map((file, index) => {
+        return new Promise((resolve) => {
+          try {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              if (reader.result) {
+                resolve({ index, preview: reader.result });
+              } else {
+                console.error('No result for file:', file.name);
+                resolve({ index, preview: null });
+              }
+            };
+            reader.onerror = (error) => {
+              console.error('Error reading file:', file.name, error);
+              resolve({ index, preview: null });
+            };
+            reader.readAsDataURL(file);
+          } catch (error) {
+            console.error('Exception reading file:', file.name, error);
+            resolve({ index, preview: null });
           }
-        };
-        reader.readAsDataURL(file);
+        });
       });
-      if (fileArray.length === 0) {
-        setBeveragesMenuPreviews([]);
-      }
+      
+      Promise.all(previewPromises)
+        .then((results) => {
+          // Sort by index to maintain file order
+          results.sort((a, b) => a.index - b.index);
+          const previews = results.map(r => r.preview).filter(Boolean);
+          
+          if (previews.length !== fileArray.length) {
+            console.warn(`Generated ${previews.length} previews out of ${fileArray.length} files`);
+          }
+          
+          // Use functional update to ensure we're setting the latest state
+          setBeveragesMenuPreviews(() => previews);
+          
+          if (previews.length === 0) {
+            showToast('Failed to generate previews for selected images', 'error');
+          } else if (previews.length < fileArray.length) {
+            showToast(`Generated ${previews.length} out of ${fileArray.length} previews`, 'warning');
+          }
+        })
+        .catch((error) => {
+          console.error('Error in Promise.all for beverages menu images:', error);
+          showToast('Error generating image previews', 'error');
+        });
     }
   };
 
@@ -898,8 +1024,8 @@ const CreateRestaurant = () => {
                     id="name"
                     value={formData.name}
                     onChange={handleChange}
-                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.name ? 'border-red-500' : 'border-[#ea432b]'
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                        fieldErrors.name ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                       }`}
                   />
                     {fieldErrors.name && (
@@ -916,8 +1042,8 @@ const CreateRestaurant = () => {
                   rows={4}
                   value={formData.description}
                   onChange={handleChange}
-                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.description ? 'border-red-500' : 'border-[#ea432b]'
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                        fieldErrors.description ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                       }`}
                 />
                     {fieldErrors.description && (
@@ -938,8 +1064,8 @@ const CreateRestaurant = () => {
                     pattern={EMAIL_REGEX.source}
                     value={formData.email}
                     onChange={handleChange}
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.email ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.email ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.email && (
@@ -975,8 +1101,8 @@ const CreateRestaurant = () => {
                       });
                     }}
                     placeholder="10 digit mobile number"
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.mobileNumber ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.mobileNumber && (
@@ -995,8 +1121,8 @@ const CreateRestaurant = () => {
                     id="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.password ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.password ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.password && (
@@ -1019,8 +1145,8 @@ const CreateRestaurant = () => {
                     id="address"
                     value={formData.address}
                     onChange={handleChange}
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.address ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.address ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.address && (
@@ -1041,8 +1167,8 @@ const CreateRestaurant = () => {
                     onChange={handleChange}
                       placeholder="e.g., 19.305808"
                       pattern={LAT_REGEX.source}
-                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.latitude ? 'border-red-500' : 'border-[#ea432b]'
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                        fieldErrors.latitude ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                       }`}
                   />
                     {fieldErrors.latitude && (
@@ -1062,8 +1188,8 @@ const CreateRestaurant = () => {
                     onChange={handleChange}
                       placeholder="e.g., 73.063109"
                       pattern={LONG_REGEX.source}
-                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        fieldErrors.longitude ? 'border-red-500' : 'border-[#ea432b]'
+                      className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                        fieldErrors.longitude ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                       }`}
                   />
                     {fieldErrors.longitude && (
@@ -1087,7 +1213,7 @@ const CreateRestaurant = () => {
                     id="openingTime"
                     value={formData.openingTime}
                     onChange={handleChange}
-                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                     error={fieldErrors.openingTime}
                   />
                 </div>
@@ -1101,7 +1227,7 @@ const CreateRestaurant = () => {
                     id="closingTime"
                     value={formData.closingTime}
                     onChange={handleChange}
-                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                     error={fieldErrors.closingTime}
                   />
                 </div>
@@ -1121,7 +1247,7 @@ const CreateRestaurant = () => {
                       id="breakfast.available"
                       checked={formData.breakfast.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <label htmlFor="breakfast.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Breakfast Available
@@ -1138,7 +1264,7 @@ const CreateRestaurant = () => {
                           id="breakfast.startTime"
                           value={formData.breakfast.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                           error={fieldErrors['breakfast.startTime']}
                         />
                       </div>
@@ -1151,7 +1277,7 @@ const CreateRestaurant = () => {
                           id="breakfast.endTime"
                           value={formData.breakfast.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                           error={fieldErrors['breakfast.endTime']}
                         />
                       </div>
@@ -1168,7 +1294,7 @@ const CreateRestaurant = () => {
                       id="lunch.available"
                       checked={formData.lunch.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <label htmlFor="lunch.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Lunch Available
@@ -1185,7 +1311,7 @@ const CreateRestaurant = () => {
                           id="lunch.startTime"
                           value={formData.lunch.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                           error={fieldErrors['lunch.startTime']}
                         />
                       </div>
@@ -1198,7 +1324,7 @@ const CreateRestaurant = () => {
                           id="lunch.endTime"
                           value={formData.lunch.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                           error={fieldErrors['lunch.endTime']}
                         />
                       </div>
@@ -1215,7 +1341,7 @@ const CreateRestaurant = () => {
                       id="dinner.available"
                       checked={formData.dinner.available}
                       onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-[#ea432b] rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <label htmlFor="dinner.available" className="ml-2 block text-sm font-medium text-gray-700">
                       Dinner Available
@@ -1232,7 +1358,7 @@ const CreateRestaurant = () => {
                           id="dinner.startTime"
                           value={formData.dinner.startTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                           error={fieldErrors['dinner.startTime']}
                         />
                       </div>
@@ -1245,7 +1371,7 @@ const CreateRestaurant = () => {
                           id="dinner.endTime"
                           value={formData.dinner.endTime}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm"
                           error={fieldErrors['dinner.endTime']}
                         />
                       </div>
@@ -1272,8 +1398,8 @@ const CreateRestaurant = () => {
                     min="0"
                     max="99999"
                       placeholder="e.g., 1000"
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.forTwo ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.forTwo ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.forTwo && (
@@ -1291,7 +1417,7 @@ const CreateRestaurant = () => {
                     value={formData.interestId}
                     onChange={handleChange}
                     disabled={loadingInterests}
-                    className="mt-1 block w-full border border-[#ea432b] rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 focus:border-[#ea432b] sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value="0">Select an interest</option>
                     {interests.map((interest) => (
@@ -1318,8 +1444,8 @@ const CreateRestaurant = () => {
                     min="0"
                     max="100"
                       placeholder="e.g., 10"
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.offerPercentage ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.offerPercentage ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.offerPercentage && (
@@ -1341,8 +1467,8 @@ const CreateRestaurant = () => {
                     min="0"
                     max="100"
                       placeholder="e.g., 10"
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.couponPercentage ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.couponPercentage ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.couponPercentage && (
@@ -1365,8 +1491,8 @@ const CreateRestaurant = () => {
                   max="5"
                   step="0.1"
                   placeholder="0.0"
-                  className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                    fieldErrors.ratting ? 'border-red-500' : 'border-[#ea432b]'
+                  className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                    fieldErrors.ratting ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                   }`}
                 />
                 {fieldErrors.ratting && (
@@ -1385,8 +1511,8 @@ const CreateRestaurant = () => {
                     value={formData.tableBookingTerms}
                     onChange={handleChange}
                     placeholder="e.g., My Booking Terms"
-                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      fieldErrors.tableBookingTerms ? 'border-red-500' : 'border-[#ea432b]'
+                    className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:outline-none focus:ring-0 sm:text-sm ${
+                      fieldErrors.tableBookingTerms ? 'border-red-500' : 'border-gray-300 focus:border-[#ea432b]'
                     }`}
                   />
                   {fieldErrors.tableBookingTerms && (
@@ -1419,17 +1545,18 @@ const CreateRestaurant = () => {
                     {logoPreview && (
                       <div className="mt-4">
                         <p className="text-sm text-gray-600 mb-2">Preview:</p>
-                        <div className="relative inline-block">
-                        <img
-                          src={logoPreview}
-                          alt="Logo preview"
-                          className="h-32 w-32 object-cover rounded-lg border border-[#ea432b]"
-                        />
+                        <div className="relative w-fit">
+                          <img
+                            src={logoPreview}
+                            alt="Logo preview"
+                            className="h-32 w-32 object-cover rounded-lg border border-[#ea432b]"
+                          />
                           <button
                             type="button"
                             onClick={handleRemoveLogo}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 z-10 shadow-md"
                             title="Remove logo"
+                            aria-label="Remove logo"
                           >
                             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1459,20 +1586,21 @@ const CreateRestaurant = () => {
                     )}
                     {detailPreviews.length > 0 && (
                       <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-2">Previews ({detailPreviews.length}):</p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <p className="text-sm text-gray-600 mb-2">Detail Images Preview ({detailPreviews.length}):</p>
+                        <div className="flex flex-wrap gap-4">
                           {detailPreviews.map((preview, index) => (
-                            <div key={index} className="relative inline-block">
-                            <img
-                              src={preview}
-                              alt={`Detail preview ${index + 1}`}
-                              className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
-                            />
+                            <div key={`detail-preview-${index}`} className="relative">
+                              <img
+                                src={preview}
+                                alt={`Detail preview ${index + 1}`}
+                                className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
+                              />
                               <button
                                 type="button"
                                 onClick={() => handleRemoveDetailImage(index)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 z-10 shadow-md"
                                 title="Remove image"
+                                aria-label="Remove image"
                               >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1504,20 +1632,21 @@ const CreateRestaurant = () => {
                     )}
                     {foodMenuPreviews.length > 0 && (
                       <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-2">Previews ({foodMenuPreviews.length}):</p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <p className="text-sm text-gray-600 mb-2">Food Menu Images Preview ({foodMenuPreviews.length}):</p>
+                        <div className="flex flex-wrap gap-4">
                           {foodMenuPreviews.map((preview, index) => (
-                            <div key={index} className="relative inline-block">
-                            <img
-                              src={preview}
-                              alt={`Food menu preview ${index + 1}`}
-                              className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
-                            />
+                            <div key={`food-menu-preview-${index}`} className="relative">
+                              <img
+                                src={preview}
+                                alt={`Food menu preview ${index + 1}`}
+                                className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
+                              />
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFoodMenuImage(index)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 z-10 shadow-md"
                                 title="Remove image"
+                                aria-label="Remove image"
                               >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1549,20 +1678,21 @@ const CreateRestaurant = () => {
                     )}
                     {beveragesMenuPreviews.length > 0 && (
                       <div className="mt-4">
-                        <p className="text-sm text-gray-600 mb-2">Previews ({beveragesMenuPreviews.length}):</p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <p className="text-sm text-gray-600 mb-2">Beverages Menu Images Preview ({beveragesMenuPreviews.length}):</p>
+                        <div className="flex flex-wrap gap-4">
                           {beveragesMenuPreviews.map((preview, index) => (
-                            <div key={index} className="relative inline-block">
-                            <img
-                              src={preview}
-                              alt={`Beverages menu preview ${index + 1}`}
-                              className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
-                            />
+                            <div key={`beverages-menu-preview-${index}`} className="relative">
+                              <img
+                                src={preview}
+                                alt={`Beverages menu preview ${index + 1}`}
+                                className="h-24 w-24 object-cover rounded-lg border border-[#ea432b]"
+                              />
                               <button
                                 type="button"
                                 onClick={() => handleRemoveBeveragesMenuImage(index)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 z-10 shadow-md"
                                 title="Remove image"
+                                aria-label="Remove image"
                               >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -88,7 +88,7 @@ const TimePicker = ({ value, onChange, name, id, className, error }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`${className} ${error ? 'border-red-500' : 'border-gray-300'} flex items-center justify-between w-full`}
+        className={`${className} ${error ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-0 focus:border-[#ea432b] flex items-center justify-between w-full`}
       >
         <span className={value ? 'text-gray-900' : 'text-gray-400'}>
           {formatDisplayTime()}

@@ -293,6 +293,113 @@ const RestaurantDetails = () => {
                   )}
                 </div>
               </div>
+
+              {/* Images */}
+              <div className="mb-8 border-t border-gray-200 pt-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Images</h2>
+                
+                {/* Logo */}
+                {restaurant.logo && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-500 mb-2">Logo</label>
+                    <div className="flex flex-wrap gap-4">
+                      <img
+                        src={restaurant.logo}
+                        alt="Restaurant Logo"
+                        className="h-32 w-32 object-cover rounded-lg border border-gray-300"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Detail Images */}
+                {(() => {
+                  const detailImages = Array.isArray(restaurant.detailImage) 
+                    ? restaurant.detailImage 
+                    : restaurant.detailImage 
+                      ? [restaurant.detailImage] 
+                      : [];
+                  
+                  return detailImages.length > 0 && (
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-500 mb-2">
+                        Detail Images ({detailImages.length})
+                      </label>
+                      <div className="flex flex-wrap gap-4">
+                        {detailImages.map((imageUrl, index) => (
+                          <img
+                            key={index}
+                            src={imageUrl}
+                            alt={`Detail image ${index + 1}`}
+                            className="h-48 w-48 object-cover rounded-lg border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => window.open(imageUrl, '_blank')}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Food Menu Images */}
+                {restaurant.foodMenuImages && Array.isArray(restaurant.foodMenuImages) && restaurant.foodMenuImages.length > 0 && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-500 mb-2">
+                      Food Menu Images ({restaurant.foodMenuImages.length})
+                    </label>
+                    <div className="flex flex-wrap gap-4">
+                      {restaurant.foodMenuImages.map((imageUrl, index) => (
+                        <img
+                          key={index}
+                          src={imageUrl}
+                          alt={`Food menu image ${index + 1}`}
+                          className="h-48 w-48 object-cover rounded-lg border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(imageUrl, '_blank')}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Beverages Menu Images */}
+                {restaurant.beveragesMenuImages && Array.isArray(restaurant.beveragesMenuImages) && restaurant.beveragesMenuImages.length > 0 && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-500 mb-2">
+                      Beverages Menu Images ({restaurant.beveragesMenuImages.length})
+                    </label>
+                    <div className="flex flex-wrap gap-4">
+                      {restaurant.beveragesMenuImages.map((imageUrl, index) => (
+                        <img
+                          key={index}
+                          src={imageUrl}
+                          alt={`Beverages menu image ${index + 1}`}
+                          className="h-48 w-48 object-cover rounded-lg border border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(imageUrl, '_blank')}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Show message if no images */}
+                {!restaurant.logo && 
+                 !restaurant.detailImage && 
+                 (!restaurant.foodMenuImages || restaurant.foodMenuImages.length === 0) && 
+                 (!restaurant.beveragesMenuImages || restaurant.beveragesMenuImages.length === 0) && (
+                  <p className="text-sm text-gray-500">No images uploaded yet.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

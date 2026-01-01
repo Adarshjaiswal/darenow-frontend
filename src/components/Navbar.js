@@ -134,18 +134,6 @@ const Navbar = () => {
                 >
                   Contact
                 </Link>
-                <Link
-                  to="/restaurant/login"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Restaurant Login
-                </Link>
-                <Link
-                  to="/login"
-                  className="bg-[#EB422B] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#EB422B]"
-                >
-                  Admin Login
-                </Link>
               </>
             )}
           </div>
@@ -206,20 +194,6 @@ const Navbar = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Contact
-                  </Link>
-                  <Link
-                    to="/restaurant/login"
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Restaurant Login
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="bg-[#EB422B] text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-[#EB422B]"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Admin Login
                   </Link>
                 </>
               )}
