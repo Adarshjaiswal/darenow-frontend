@@ -892,9 +892,7 @@ const EditRestaurant = () => {
       }
 
       if (detailImages.length > 0) {
-        for (const image of detailImages) {
-          await uploadImage('addDetailImage', 'detailImage', [image]);
-        }
+        await uploadImage('addDetailImage', 'detailImage', detailImages);
       }
 
       if (foodMenuImages.length > 0) {

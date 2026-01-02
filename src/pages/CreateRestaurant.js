@@ -892,9 +892,7 @@ const CreateRestaurant = () => {
       }
 
       if (detailImages.length > 0) {
-        for (const image of detailImages) {
-          await uploadImage(placeId, 'addDetailImage', 'detailImage', [image]);
-        }
+        await uploadImage(placeId, 'addDetailImage', 'detailImage', detailImages);
       }
 
       if (foodMenuImages.length > 0) {
