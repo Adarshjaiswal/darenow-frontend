@@ -598,6 +598,11 @@ const CreateRestaurant = () => {
           ...prev,
           detailImages: `Maximum ${MAX_IMAGES} images allowed. You selected ${fileArray.length} images.`
         }));
+        // Clear the file input
+        const fileInput = document.getElementById('detailImages');
+        if (fileInput) {
+          fileInput.value = '';
+        }
         return;
       }
       
@@ -677,6 +682,11 @@ const CreateRestaurant = () => {
           ...prev,
           foodMenuImages: `Maximum ${MAX_IMAGES} images allowed. You selected ${fileArray.length} images.`
         }));
+        // Clear the file input
+        const fileInput = document.getElementById('foodMenuImages');
+        if (fileInput) {
+          fileInput.value = '';
+        }
         return;
       }
       
@@ -756,6 +766,11 @@ const CreateRestaurant = () => {
           ...prev,
           beveragesMenuImages: `Maximum ${MAX_IMAGES} images allowed. You selected ${fileArray.length} images.`
         }));
+        // Clear the file input
+        const fileInput = document.getElementById('beveragesMenuImages');
+        if (fileInput) {
+          fileInput.value = '';
+        }
         return;
       }
       

@@ -561,6 +561,11 @@ const EditRestaurant = () => {
           ...prev,
           detailImages: `Maximum ${MAX_IMAGES} images allowed. You have ${existingDetailImages.length} existing images and selected ${fileArray.length} new images.`
         }));
+        // Clear the file input
+        const fileInput = document.getElementById('detailImages');
+        if (fileInput) {
+          fileInput.value = '';
+        }
         return;
       }
       
@@ -648,6 +653,11 @@ const EditRestaurant = () => {
           ...prev,
           foodMenuImages: `Maximum ${MAX_IMAGES} images allowed. You have ${existingFoodMenuImages.length} existing images and selected ${fileArray.length} new images.`
         }));
+        // Clear the file input
+        const fileInput = document.getElementById('foodMenuImages');
+        if (fileInput) {
+          fileInput.value = '';
+        }
         return;
       }
       
@@ -735,6 +745,11 @@ const EditRestaurant = () => {
           ...prev,
           beveragesMenuImages: `Maximum ${MAX_IMAGES} images allowed. You have ${existingBeveragesMenuImages.length} existing images and selected ${fileArray.length} new images.`
         }));
+        // Clear the file input
+        const fileInput = document.getElementById('beveragesMenuImages');
+        if (fileInput) {
+          fileInput.value = '';
+        }
         return;
       }
       
@@ -1565,6 +1580,9 @@ const EditRestaurant = () => {
                       onChange={(e) => handleImageChange('detail', e.target.files)}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
+                    {fieldErrors.detailImages && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.detailImages}</p>
+                    )}
                     {(existingDetailImages.length > 0 || detailPreviews.length > 0) && (
                       <div className="mt-4">
                         {existingDetailImages.length > 0 && (
@@ -1627,6 +1645,9 @@ const EditRestaurant = () => {
                       onChange={(e) => handleImageChange('foodMenu', e.target.files)}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
+                    {fieldErrors.foodMenuImages && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.foodMenuImages}</p>
+                    )}
                     {(existingFoodMenuImages.length > 0 || foodMenuPreviews.length > 0) && (
                       <div className="mt-4">
                         {existingFoodMenuImages.length > 0 && (
@@ -1689,6 +1710,9 @@ const EditRestaurant = () => {
                       onChange={(e) => handleImageChange('beveragesMenu', e.target.files)}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
+                    {fieldErrors.beveragesMenuImages && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.beveragesMenuImages}</p>
+                    )}
                     {(existingBeveragesMenuImages.length > 0 || beveragesMenuPreviews.length > 0) && (
                       <div className="mt-4">
                         {existingBeveragesMenuImages.length > 0 && (
